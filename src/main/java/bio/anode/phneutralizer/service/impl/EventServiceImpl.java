@@ -1,11 +1,13 @@
 package bio.anode.phneutralizer.service.impl;
 
-import jakarta.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.anode.logging.EventMarkers;
+import com.anode.logging.reader.EventLogReader;
+import com.anode.logging.reader.EventXmlLogReader;
 
 import bio.anode.phneutralizer.dto.AvailableDatesResponse;
 import bio.anode.phneutralizer.dto.EventFilterRequest;
@@ -15,84 +17,36 @@ import bio.anode.phneutralizer.enums.Status;
 import bio.anode.phneutralizer.model.MeasureEvent;
 import bio.anode.phneutralizer.model.NeutralizerEvent;
 import bio.anode.phneutralizer.service.EventService;
+import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class EventServiceImpl implements EventService {
 
-    private static final Logger log = LoggerFactory.getLogger(EventServiceImpl.class);
+    private final Path archiveDir;
+    private final EventLogReader jsonReader;
+    private final EventXmlLogReader xmlReader;
 
-    @Value("${neutralizer.archive.dir:#{systemProperties['java.io.tmpdir']}}")
-    private Path archiveDir;
-
-    @PostConstruct
-    public void initArchiveDir() {
-        try {
-            archiveDir = archiveDir.resolve("backup");
-            Files.createDirectories(archiveDir);
-
-            if (!Files.isWritable(archiveDir)) {
-                throw new IllegalStateException(
-                    "Archive dir not writable: " + archiveDir
-                );
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException(
-                "Failed to init archive dir: " + archiveDir, e
-            );
-        }
-    }
-
-    // In-memory event storage (in a real implementation, this would use file-based XML storage)
-    private final List<MeasureEvent> measureEvents = new ArrayList<>();
-    private final List<NeutralizerEvent> neutralizerEvents = new ArrayList<>();
-
-    public EventServiceImpl() {
-        // Initialize with some sample data
-        initializeSampleData();
-    }
-
-    private void initializeSampleData() {
-        LocalDateTime now = LocalDateTime.now();
-        for (int i = 0; i < 24; i++) {
-            measureEvents.add(MeasureEvent.builder()
-                    .timestamp(now.minusHours(i))
-                    .metricName("PH")
-                    .value(7.0 + (Math.random() - 0.5))
-                    .unit("pH")
-                    .build());
-            measureEvents.add(MeasureEvent.builder()
-                    .timestamp(now.minusHours(i))
-                    .metricName("TEMPERATURE")
-                    .value(25.0 + (Math.random() * 5))
-                    .unit("°C")
-                    .build());
-        }
-        neutralizerEvents.add(NeutralizerEvent.builder()
-                .timestamp(now.minusHours(2))
-                .status(Status.NEUTRALIZING)
-                .acidTankState(Level.OK)
-                .build());
-        neutralizerEvents.add(NeutralizerEvent.builder()
-                .timestamp(now.minusHours(1))
-                .status(Status.IDLE)
-                .acidTankState(Level.OK)
-                .build());
+    public EventServiceImpl(@Value("${logging.event.path}") Path archiveDir) {
+        this.archiveDir = archiveDir;
+        this.jsonReader = new EventLogReader(archiveDir);
+        this.xmlReader = new EventXmlLogReader(archiveDir);
     }
 
     @Override
     public EventResponse getMeasureEvents(EventFilterRequest filter) {
         log.debug("Getting measure events with filter: {}", filter);
-        List<MeasureEvent> filtered = filterMeasureEvents(measureEvents, filter);
+
+        List<MeasureEvent> events = readMeasureEvents(filter);
+        List<MeasureEvent> filtered = filterMeasureEvents(events, filter);
+
         return EventResponse.builder()
                 .events(filtered)
                 .totalCount(filtered.size())
@@ -104,7 +58,10 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventResponse getNeutralizerEvents(EventFilterRequest filter) {
         log.debug("Getting neutralizer events with filter: {}", filter);
-        List<NeutralizerEvent> filtered = filterNeutralizerEvents(neutralizerEvents, filter);
+
+        List<NeutralizerEvent> events = readNeutralizerEvents(filter);
+        List<NeutralizerEvent> filtered = filterNeutralizerEvents(events, filter);
+
         return EventResponse.builder()
                 .events(filtered)
                 .totalCount(filtered.size())
@@ -119,9 +76,10 @@ public class EventServiceImpl implements EventService {
         EventFilterRequest phFilter = EventFilterRequest.builder()
                 .startDate(filter.getStartDate())
                 .endDate(filter.getEndDate())
+                .logType(filter.getLogType())
                 .metricName("PH")
                 .build();
-        return filterMeasureEvents(measureEvents, phFilter);
+        return filterMeasureEvents(readMeasureEvents(phFilter), phFilter);
     }
 
     @Override
@@ -130,26 +88,22 @@ public class EventServiceImpl implements EventService {
         EventFilterRequest tempFilter = EventFilterRequest.builder()
                 .startDate(filter.getStartDate())
                 .endDate(filter.getEndDate())
+                .logType(filter.getLogType())
                 .metricName("TEMPERATURE")
                 .build();
-        return filterMeasureEvents(measureEvents, tempFilter);
+        return filterMeasureEvents(readMeasureEvents(tempFilter), tempFilter);
     }
 
     @Override
     public List<NeutralizerEvent> getStatusEvents(EventFilterRequest filter) {
         log.debug("Getting status events");
-        return filterNeutralizerEvents(neutralizerEvents, filter);
+        return filterNeutralizerEvents(readNeutralizerEvents(filter), filter);
     }
 
     @Override
     public AvailableDatesResponse getAvailableDates() {
         log.debug("Getting available dates");
-        // In a real implementation, this would scan the archive directory
-        List<LocalDate> dates = measureEvents.stream()
-                .map(e -> e.getTimestamp().toLocalDate())
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
+        List<LocalDate> dates = jsonReader.getAvailableDates();
         return AvailableDatesResponse.builder()
                 .availableDates(dates)
                 .build();
@@ -164,7 +118,7 @@ public class EventServiceImpl implements EventService {
             csv.append("Timestamp,Metric,Value,Unit\n");
         }
 
-        List<MeasureEvent> events = filterMeasureEvents(measureEvents, filter);
+        List<MeasureEvent> events = filterMeasureEvents(readMeasureEvents(filter), filter);
         for (MeasureEvent event : events) {
             csv.append(String.format("%s,%s,%.2f,%s\n",
                     event.getTimestamp(),
@@ -179,13 +133,65 @@ public class EventServiceImpl implements EventService {
     @Override
     public void archiveEvent(MeasureEvent event) {
         log.debug("Archiving measure event: {}", event);
-        measureEvents.add(event);
+        log.info(EventMarkers.EVENT, "{}", event);
     }
 
     @Override
     public void archiveEvent(NeutralizerEvent event) {
         log.debug("Archiving neutralizer event: {}", event);
-        neutralizerEvents.add(event);
+        log.info(EventMarkers.EVENT, "{}", event);
+    }
+
+    private List<MeasureEvent> readMeasureEvents(EventFilterRequest filter) {
+        if ("xml".equalsIgnoreCase(filter.getLogType())) {
+            return xmlReader.readEvents("MeasureEvent", attrs -> MeasureEvent.builder()
+                    .timestamp(parseDateTime(attrs.get("timestamp")))
+                    .metricName(attrs.get("metricName"))
+                    .value(parseDouble(attrs.get("value")))
+                    .unit(attrs.get("unit"))
+                    .build(),
+                filter.getStartDate(), filter.getEndDate());
+        }
+        // Default to JSON
+        return jsonReader.readEvents(
+            MeasureEvent.class,
+            "MeasureEvent",
+            filter.getStartDate(),
+            filter.getEndDate()
+        );
+    }
+
+    private List<NeutralizerEvent> readNeutralizerEvents(EventFilterRequest filter) {
+        if ("xml".equalsIgnoreCase(filter.getLogType())) {
+            return xmlReader.readEvents("NeutralizerEvent", attrs -> NeutralizerEvent.builder()
+                    .timestamp(parseDateTime(attrs.get("timestamp")))
+                    .status(parseEnum(Status.class, attrs.get("status")))
+                    .acidTankState(parseEnum(Level.class, attrs.get("acidTankState")))
+                    .build(),
+                filter.getStartDate(), filter.getEndDate());
+        }
+        // Default to JSON
+        return jsonReader.readEvents(
+            NeutralizerEvent.class,
+            "NeutralizerEvent",
+            filter.getStartDate(),
+            filter.getEndDate()
+        );
+    }
+
+    private LocalDateTime parseDateTime(String value) {
+        if (value == null || value.isBlank()) return null;
+        return LocalDateTime.parse(value);
+    }
+
+    private Double parseDouble(String value) {
+        if (value == null || value.isBlank()) return null;
+        return Double.parseDouble(value);
+    }
+
+    private <E extends Enum<E>> E parseEnum(Class<E> enumType, String value) {
+        if (value == null || value.isBlank()) return null;
+        return Enum.valueOf(enumType, value);
     }
 
     private List<MeasureEvent> filterMeasureEvents(List<MeasureEvent> events, EventFilterRequest filter) {

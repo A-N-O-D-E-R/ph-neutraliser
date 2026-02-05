@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="LOG_PATH" source="logging.event.path" defaultValue="./logs"/>
+    <springProperty scope="context" name="RETENTION_DAYS" source="logging.event.retention-days" defaultValue="30"/>
+
+    <!-- Console appender (excludes EVENT logs) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="com.anode.logging.filter.NonEventMarkerFilter"/>
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>${CONSOLE_LOG_CHARSET}</charset>
+        </encoder>
+    </appender>
+
+    <!-- Event JSON file -->
+    <appender name="EVENT_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/events.json</file>
+        <filter class="com.anode.logging.filter.EventMarkerFilter"/>
+        <encoder class="com.anode.logging.encoder.EventJsonEncoder"/>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/events.json.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>${RETENTION_DAYS}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Event XML file -->
+    <appender name="EVENT_XML" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/events.xml</file>
+        <filter class="com.anode.logging.filter.EventMarkerFilter"/>
+        <encoder class="com.anode.logging.encoder.EventXmlEncoder"/>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/events.xml.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>${RETENTION_DAYS}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="EVENT_JSON"/>
+        <appender-ref ref="EVENT_XML"/>
+    </root>
+</configuration>

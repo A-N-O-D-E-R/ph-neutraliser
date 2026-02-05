@@ -55,6 +55,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- Event Logging -->
+        <dependency>
+            <groupId>com.anode</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+            <version>0.0.2-SNAPSHOT</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
