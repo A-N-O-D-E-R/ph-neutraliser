@@ -21,8 +21,8 @@ public class OpenApiConfig {
                         .version("1.0.0")
                         .description("REST API for controlling and monitoring the pH neutralization system")
                         .contact(new Contact()
-                                .name("Bio Altar")
-                                .email("support@altar.bio"))
+                                .name("A-N-O-D-E-R")
+                                .email("weber.anoder@proton.me"))
                         .license(new License()
                                 .name("Proprietary")))
                 .servers(List.of(

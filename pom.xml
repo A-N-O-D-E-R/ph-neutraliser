@@ -41,13 +41,6 @@
             <version>2.3.0</version>
         </dependency>
 
-        <!-- Modbus Communication -->
-        <dependency>
-            <groupId>com.ghgande</groupId>
-            <artifactId>j2mod</artifactId>
-            <version>2.5.1</version>
-        </dependency>
-
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -59,6 +52,13 @@
         <dependency>
             <groupId>com.anode</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
+            <version>0.0.2-SNAPSHOT</version>
+        </dependency>
+
+        <!-- Modbus Communication -->
+        <dependency>
+            <groupId>com.anode</groupId>
+            <artifactId>spring-boot-starter-modbus</artifactId>
             <version>0.0.2-SNAPSHOT</version>
         </dependency>
 

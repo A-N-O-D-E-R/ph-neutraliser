@@ -7,12 +7,20 @@ spring:
   application:
     name: ph-neutralizer
 
+# Modbus Configuration
+modbus:
+  connections:
+    - name: neutralizer
+      host: rtu:///dev/ttyACM0:38400
+      timeout: 2000
+      parity: none
+      stop-bits: 1
+      data-bits: 8
+
 # Neutralizer Hardware Configuration
 neutralizer:
-  arduino:
-    port: /dev/ttyACM0
-    baudrate: 38400
-    slave-id: 1
+  connection-name: neutralizer
+  slave-id: 1
 
 # OpenAPI Configuration
 springdoc:
