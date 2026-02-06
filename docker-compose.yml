@@ -1,0 +1,13 @@
+services:
+  ph-neutralizer:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/app/logs
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0
+    environment:
+      - MODBUS_CONNECTIONS_0_HOST=rtu:///dev/ttyACM0:38400
+      - LOGGING_EVENT_PATH=/app/logs
+    restart: unless-stopped
