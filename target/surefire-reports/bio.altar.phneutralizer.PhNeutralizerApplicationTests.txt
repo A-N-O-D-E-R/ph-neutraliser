@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: bio.altar.phneutralizer.PhNeutralizerApplicationTests
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.708 s -- in bio.altar.phneutralizer.PhNeutralizerApplicationTests

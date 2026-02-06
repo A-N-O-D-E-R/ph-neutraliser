@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: bio.altar.phneutralizer.controller.NeutralizerControllerTests
--------------------------------------------------------------------------------
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.812 s -- in bio.altar.phneutralizer.controller.NeutralizerControllerTests
