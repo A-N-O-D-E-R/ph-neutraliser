@@ -1,0 +1,8 @@
+# Test profile
+
+logging:
+  level:
+    bio.anode.phneutralizer: DEBUG
+  event:
+    path: ./target/test-logs
+    retention-days: 1

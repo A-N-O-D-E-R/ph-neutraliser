@@ -1,0 +1,8 @@
+# Local profile - uses mock services (no hardware required)
+
+logging:
+  level:
+    bio.anode.phneutralizer: DEBUG
+  event:
+    path: ${java.io.tmpdir}/logs
+    retention-days: 2

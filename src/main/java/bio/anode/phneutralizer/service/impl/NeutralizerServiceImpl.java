@@ -1,6 +1,7 @@
 package bio.anode.phneutralizer.service.impl;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.anode.modbus.ModbusIOService;
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 
 @Service
+@Profile("!test & !local")
 @Slf4j
 public class NeutralizerServiceImpl implements NeutralizerService {
 
