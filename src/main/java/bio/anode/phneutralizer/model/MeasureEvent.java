@@ -1,18 +1,4 @@
 package bio.anode.phneutralizer.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
-@Data
-@SuperBuilder
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class MeasureEvent extends Event {
-    private String metricName;
-    private Double value;
-    private String unit;
-}
+import java.time.LocalDateTime;
+public record MeasureEvent(LocalDateTime timestamp, String metricName, Double value, String unit) implements Event {}

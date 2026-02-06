@@ -60,19 +60,9 @@ public class MockNeutralizerServiceImpl implements NeutralizerService {
         double ph = 6.5 + random.nextDouble() * 1.5;
         double temp = 20.0 + random.nextDouble() * 10.0;
 
-        eventService.archiveEvent(MeasureEvent.builder()
-                .timestamp(LocalDateTime.now())
-                .metricName("PH")
-                .value(ph)
-                .unit("pH")
-                .build());
+        eventService.archiveEvent(new MeasureEvent(LocalDateTime.now(),"PH",ph,"pH"));
 
-        eventService.archiveEvent(MeasureEvent.builder()
-                .timestamp(LocalDateTime.now())
-                .metricName("TEMPERATURE")
-                .value(temp)
-                .unit("°C")
-                .build());
+        eventService.archiveEvent(new MeasureEvent(LocalDateTime.now(),"TEMPERATURE",temp,"°C"));
 
         return NeutralizerStatusResponse.builder()
                 .currentPh(ph)
@@ -81,7 +71,7 @@ public class MockNeutralizerServiceImpl implements NeutralizerService {
                 .status(status)
                 .runningMode(runningMode)
                 .acidLevel(Level.OK)
-                .neutralizerLevel(random.nextBoolean() ? Level.OK : Level.FULL)
+                .neutralizerLevel(random.nextBoolean() ? Level.OK : Level.HIGH)
                 .wasteLevel(Level.OK)
                 .wasteBisLevel(Level.OK)
                 .systemTime(LocalDateTime.now())
@@ -182,10 +172,6 @@ public class MockNeutralizerServiceImpl implements NeutralizerService {
     }
 
     private void logStatusEvent(Status status) {
-        eventService.archiveEvent(NeutralizerEvent.builder()
-                .timestamp(LocalDateTime.now())
-                .status(status)
-                .acidTankState(Level.OK)
-                .build());
+        eventService.archiveEvent(new NeutralizerEvent(LocalDateTime.now(),status,Level.OK));
     }
 }

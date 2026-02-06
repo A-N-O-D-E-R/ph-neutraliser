@@ -111,19 +111,9 @@ public class NeutralizerServiceImpl implements NeutralizerService {
             RunningMode mode = RunningMode.values()[readRegister(REG_RUNNING_MODE)];
 
             // Log measure events
-            eventService.archiveEvent(MeasureEvent.builder()
-                    .timestamp(LocalDateTime.now())
-                    .metricName("PH")
-                    .value(ph)
-                    .unit("pH")
-                    .build());
+            eventService.archiveEvent(new MeasureEvent(LocalDateTime.now(),"PH",ph,"pH"));
 
-            eventService.archiveEvent(MeasureEvent.builder()
-                    .timestamp(LocalDateTime.now())
-                    .metricName("TEMPERATURE")
-                    .value(temp)
-                    .unit("°C")
-                    .build());
+            eventService.archiveEvent(new MeasureEvent(LocalDateTime.now(),"TEMPERATURE",temp,"°C"));
 
             return NeutralizerStatusResponse.builder()
                     .currentPh(ph)
@@ -369,17 +359,10 @@ public class NeutralizerServiceImpl implements NeutralizerService {
     private void logStatusEvent(Status status) {
         try {
             Level acidLevel = readRegister(REG_ACID_LEVEL) == 0 ? Level.OK : Level.LOW;
-            eventService.archiveEvent(NeutralizerEvent.builder()
-                    .timestamp(LocalDateTime.now())
-                    .status(status)
-                    .acidTankState(acidLevel)
-                    .build());
+            eventService.archiveEvent(new NeutralizerEvent(LocalDateTime.now(),status,acidLevel));
         } catch (ModbusException e) {
             log.warn("Failed to read acid level for event logging", e);
-            eventService.archiveEvent(NeutralizerEvent.builder()
-                    .timestamp(LocalDateTime.now())
-                    .status(status)
-                    .build());
+            eventService.archiveEvent(new NeutralizerEvent(LocalDateTime.now(),status,null));
         }
     }
 }
