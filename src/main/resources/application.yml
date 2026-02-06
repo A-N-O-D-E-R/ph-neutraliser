@@ -38,3 +38,19 @@ logging:
   event:
     path: ./logs
     retention-days: 30
+
+# Scheduler
+scheduler:
+  watcher:
+    status-rate: 10000
+  archive:
+    cron: "0 0 2 * * *"
+  backup:
+    cron: "0 30 2 * * *"
+
+# B2 Cloud Backup
+b2:
+  enabled: ${B2_ENABLED:false}
+  application-key-id: ${B2_KEY_ID:}
+  application-key: ${B2_KEY:}
+  default-bucket-name: ${B2_BUCKET:ph-neutralizer-backup}

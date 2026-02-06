@@ -122,9 +122,9 @@ public class NeutralizerServiceImpl implements NeutralizerService {
                     .status(status)
                     .runningMode(mode)
                     .acidLevel(readRegister(REG_ACID_LEVEL) == 0 ? Level.OK : Level.LOW)
-                    .neutralizerLevel(readRegister(REG_NEUTRALIZER_TANK_FULL) == 1 ? Level.FULL : Level.OK)
-                    .wasteLevel(readRegister(REG_WASTE_TANK_FULL) == 1 ? Level.FULL : Level.OK)
-                    .wasteBisLevel(readRegister(REG_WASTE_BIS_TANK_FULL) == 1 ? Level.FULL : Level.OK)
+                    .neutralizerLevel(readRegister(REG_NEUTRALIZER_TANK_FULL) == 1 ? Level.HIGH : Level.OK)
+                    .wasteLevel(readRegister(REG_WASTE_TANK_FULL) == 1 ? Level.HIGH : Level.OK)
+                    .wasteBisLevel(readRegister(REG_WASTE_BIS_TANK_FULL) == 1 ? Level.HIGH : Level.OK)
                     .systemTime(readDeviceTime())
                     .configuration(getConfiguration())
                     .build();
