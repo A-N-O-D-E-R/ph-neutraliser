@@ -1,7 +1,5 @@
 package bio.anode.phneutralizer.service.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -30,12 +28,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EventServiceImpl implements EventService {
 
-    private final Path archiveDir;
     private final EventLogReader jsonReader;
     private final EventXmlLogReader xmlReader;
 
     public EventServiceImpl(@Value("${logging.event.path}") Path archiveDir) {
-        this.archiveDir = archiveDir;
         this.jsonReader = new EventLogReader(archiveDir);
         this.xmlReader = new EventXmlLogReader(archiveDir);
     }
@@ -121,10 +117,10 @@ public class EventServiceImpl implements EventService {
         List<MeasureEvent> events = filterMeasureEvents(readMeasureEvents(filter), filter);
         for (MeasureEvent event : events) {
             csv.append(String.format("%s,%s,%.2f,%s\n",
-                    event.getTimestamp(),
-                    event.getMetricName(),
-                    event.getValue(),
-                    event.getUnit()));
+                    event.timestamp(),
+                    event.metricName(),
+                    event.value(),
+                    event.unit()));
         }
 
         return csv.toString().getBytes(StandardCharsets.UTF_8);
@@ -144,12 +140,11 @@ public class EventServiceImpl implements EventService {
 
     private List<MeasureEvent> readMeasureEvents(EventFilterRequest filter) {
         if ("xml".equalsIgnoreCase(filter.getLogType())) {
-            return xmlReader.readEvents("MeasureEvent", attrs -> MeasureEvent.builder()
-                    .timestamp(parseDateTime(attrs.get("timestamp")))
-                    .metricName(attrs.get("metricName"))
-                    .value(parseDouble(attrs.get("value")))
-                    .unit(attrs.get("unit"))
-                    .build(),
+            return xmlReader.readEvents("MeasureEvent", attrs ->new  MeasureEvent(
+                    parseDateTime(attrs.get("timestamp")),
+                    attrs.get("metricName"),
+                    parseDouble(attrs.get("value")),
+                    (attrs.get("unit"))),
                 filter.getStartDate(), filter.getEndDate());
         }
         // Default to JSON
@@ -163,11 +158,10 @@ public class EventServiceImpl implements EventService {
 
     private List<NeutralizerEvent> readNeutralizerEvents(EventFilterRequest filter) {
         if ("xml".equalsIgnoreCase(filter.getLogType())) {
-            return xmlReader.readEvents("NeutralizerEvent", attrs -> NeutralizerEvent.builder()
-                    .timestamp(parseDateTime(attrs.get("timestamp")))
-                    .status(parseEnum(Status.class, attrs.get("status")))
-                    .acidTankState(parseEnum(Level.class, attrs.get("acidTankState")))
-                    .build(),
+            return xmlReader.readEvents("NeutralizerEvent", attrs -> new NeutralizerEvent(
+                    parseDateTime(attrs.get("timestamp")),
+                    parseEnum(Status.class, attrs.get("status")),
+                    parseEnum(Level.class, attrs.get("acidTankState"))),
                 filter.getStartDate(), filter.getEndDate());
         }
         // Default to JSON
@@ -196,17 +190,17 @@ public class EventServiceImpl implements EventService {
 
     private List<MeasureEvent> filterMeasureEvents(List<MeasureEvent> events, EventFilterRequest filter) {
         return events.stream()
-                .filter(e -> filter.getStartDate() == null || !e.getTimestamp().isBefore(filter.getStartDate()))
-                .filter(e -> filter.getEndDate() == null || !e.getTimestamp().isAfter(filter.getEndDate()))
-                .filter(e -> filter.getMetricName() == null || filter.getMetricName().equalsIgnoreCase(e.getMetricName()))
+                .filter(e -> filter.getStartDate() == null || !e.timestamp().isBefore(filter.getStartDate()))
+                .filter(e -> filter.getEndDate() == null || !e.timestamp().isAfter(filter.getEndDate()))
+                .filter(e -> filter.getMetricName() == null || filter.getMetricName().equalsIgnoreCase(e.metricName()))
                 .sorted()
                 .collect(Collectors.toList());
     }
 
     private List<NeutralizerEvent> filterNeutralizerEvents(List<NeutralizerEvent> events, EventFilterRequest filter) {
         return events.stream()
-                .filter(e -> filter.getStartDate() == null || !e.getTimestamp().isBefore(filter.getStartDate()))
-                .filter(e -> filter.getEndDate() == null || !e.getTimestamp().isAfter(filter.getEndDate()))
+                .filter(e -> filter.getStartDate() == null || !e.timestamp().isBefore(filter.getStartDate()))
+                .filter(e -> filter.getEndDate() == null || !e.timestamp().isAfter(filter.getEndDate()))
                 .sorted()
                 .collect(Collectors.toList());
     }

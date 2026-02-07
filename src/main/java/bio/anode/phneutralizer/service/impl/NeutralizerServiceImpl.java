@@ -25,8 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 
 @Service
-@Profile("!test & !local")
 @Slf4j
+@Profile("!test & !local")
 public class NeutralizerServiceImpl implements NeutralizerService {
 
     // Neutralizer registers

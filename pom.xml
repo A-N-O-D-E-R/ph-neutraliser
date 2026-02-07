@@ -13,14 +13,16 @@
 
     <groupId>bio.anode</groupId>
     <artifactId>ph-neutralizer</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>Open pH neutralizer</name>
     <description>REST API for pH Neutralization System Control</description>
 
     <properties>
         <java.version>25</java.version>
         <frontend.dir>${project.basedir}/src/main/ts</frontend.dir>
+        <arduino.dir>${project.basedir}/src/main/arduino</arduino.dir>
         <bun.version>1.1.30</bun.version>
+        <arduino-cli.version>0.35.2</arduino-cli.version>
     </properties>
 
     <dependencies>
@@ -53,7 +55,8 @@
         <!-- Event Logging -->
         <dependency>
             <groupId>com.anode</groupId>
-            <artifactId>spring-boot-starter-logging</artifactId>
+            <artifactId>springboot-starter-collection-logging</artifactId>
+            <version>0.0.2-SNAPSHOT</version>
         </dependency>
 
         <!-- Modbus Communication -->
@@ -78,6 +81,18 @@
 
     <build>
         <plugins>
+             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -97,34 +112,56 @@
                 <version>1.15.1</version>
                 <configuration>
                     <workingDirectory>${frontend.dir}</workingDirectory>
+                    <bunVersion>v${bun.version}</bunVersion>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>install-bun</id>
+                        <!-- optional: you don't really need execution ids, but it looks nice in your build log. -->
+                        <id>install bun</id>
                         <goals>
                             <goal>install-bun</goal>
                         </goals>
-                        <configuration>
-                            <bunVersion>v${bun.version}</bunVersion>
-                        </configuration>
+                        <!-- optional: default phase is "generate-resources" -->
+                        <phase>generate-resources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.anode</groupId>
+                <artifactId>arduino-maven-plugin</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+
+                <configuration>
+                    <arduinoCliVersion>${arduino-cli.version}</arduinoCliVersion>
+                    <fqbn>arduino:avr:uno</fqbn>
+                    <sketchDir>${arduino.dir}</sketchDir>
+                    <outputDir>${project.build.directory}/arduino</outputDir>
+                    <libraryDir>${arduino.dir}/lib</libraryDir>
+                    <cores>
+                        <core>arduino:avr</core>
+                    </cores>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <id>install-cli</id>
+                        <goals><goal>install-cli</goal></goals>
                     </execution>
                     <execution>
-                        <id>bun-install</id>
-                        <goals>
-                            <goal>bun</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>install</arguments>
-                        </configuration>
+                        <id>install-cores</id>
+                        <goals><goal>install-cores</goal></goals>
                     </execution>
                     <execution>
-                        <id>bun-build</id>
-                        <goals>
-                            <goal>bun</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run build</arguments>
-                        </configuration>
+                        <id>install-libraries</id>
+                        <goals><goal>install-libraries</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>compile-library</id>
+                        <goals><goal>compile-library</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>compile</id>
+                        <goals><goal>compile</goal></goals>
                     </execution>
                 </executions>
             </plugin>
