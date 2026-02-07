@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/src/main/arduino/**",
+                "${workspaceFolder}/src/main/arduino/lib/RTClib",
+                "${workspaceFolder}/src/main/arduino/lib/ModbusRTC",
+                "${workspaceFolder}/src/main/arduino/lib/PHNeutralizer",
+                "${workspaceFolder}/src/main/arduino/lib/SimpleModbusSlave",
+                "${workspaceFolder}/src/main/arduino/lib/EZOPHMeter",
+                "${workspaceFolder}/src/main/arduino/lib/EZOThermometer"
+            ],
+            "defines": [
+                "ARDUINO=10819",
+                "__AVR_ATmega328P__"
+            ],
+            "compilerPath": "/usr/bin/avr-gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}
