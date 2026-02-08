@@ -1,2 +1,11 @@
 /target
 /src/main/ts/bun
+# TLS
+# TLS / mTLS
+certs/*.p12
+certs/*.key
+certs/*.crt
+certs/*.srl
+src/main/resources/server.p12
+src/main/resources/truststore.p12
+logs/
