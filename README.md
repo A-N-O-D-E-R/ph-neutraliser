@@ -1,8 +1,27 @@
 # OpenNeutralizer
 
-REST API for pH Neutralization System Control with Modbus RTU communication.
+This project aim to create a simple OpenSource and OpenHardware ph-neutralizer, this can help future open lab initiative and create a simple fundation for a larger ecosystem. 
 
-## Features
+## How 
+
+This neutralizer aim to neutralize high PH liquid with acid to be able to send to the waste within the specs of the french regulation. It keep history of all the neutralization and the ph/temp measure locally. 
+
+The functionment of this Hardware is straight forward. it is composed of 4 receipient : 
+- WASTE 1
+- WASTE 2
+- ACID 
+- MAIN TANK
+
+All the High ph Liquid arrive in one of the waste tank, and depending on the configuration it will trigger a Neutralization cycle : 
+1. put the Waste in the Main Tank,
+2. start the air mixing 
+3. will send acid pulse until the ph goes below a certain value - given by the config
+4. stop the air mixing
+5. send the Neutralize liquid to the waste. 
+
+Want to build your own ph-neutralizer go to [build instruction](./docs/BUILD_INSTRUCTION.md)
+
+## Features & Technologies
 
 - **Modbus RTU** - Hardware communication via serial port
 - **Event Logging** - JSON/XML structured logs with daily rotation
