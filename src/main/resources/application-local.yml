@@ -1,5 +1,19 @@
 # Local profile - uses mock services (no hardware required)
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: classpath:server.p12
+    key-store-type: PKCS12
+    key-store-password: ${KEYSTORE_PASSWORD}
+    key-alias: server
 
+    trust-store: classpath:truststore.p12
+    trust-store-password: ${TRUSTSTORE_PASSWORD}
+    trust-store-type: PKCS12
+
+    client-auth: need
+    
 logging:
   level:
     bio.anode.phneutralizer: DEBUG

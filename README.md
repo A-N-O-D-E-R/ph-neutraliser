@@ -164,3 +164,9 @@ See [docs/MODBUS.md](docs/MODBUS.md)
 | `B2_KEY` | B2 application key |
 | `B2_BUCKET` | B2 bucket name |
 
+
+
+
+```bash 
+curl https://localhost:8443  --cert certs/client.crt  --key certs/client.key  --cacert certs/ca.crt
+```
