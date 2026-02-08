@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import com.anode.arduino.ArduinoCLI;
 import com.anode.modbus.ModbusIOService;
 import com.ghgande.j2mod.modbus.ModbusException;
 
@@ -20,14 +21,25 @@ import bio.anode.phneutralizer.model.MeasureEvent;
 import bio.anode.phneutralizer.model.NeutralizerEvent;
 import bio.anode.phneutralizer.service.EventService;
 import bio.anode.phneutralizer.service.NeutralizerService;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 
 @Service
 @Slf4j
 @Profile("!test & !local")
 public class NeutralizerServiceImpl implements NeutralizerService {
+
+    private static final String FQBN = "arduino:avr:uno";
 
     // Neutralizer registers
     private static final int REG_COMMAND = 0;
@@ -99,6 +111,67 @@ public class NeutralizerServiceImpl implements NeutralizerService {
         this.eventService = eventService;
         this.connectionName = connectionName;
         this.slaveId = slaveId;
+    }
+
+    @PostConstruct
+    public void initCommunication() {
+        if (!testConnection()) {
+            log.info("Arduino not responding, attempting to upload sketch...");
+            try {
+                ArduinoCLI cli = new ArduinoCLI();
+                uploadNeutralizerSketch(cli, connectionName);
+                log.info("Sketch uploaded successfully");
+            } catch (URISyntaxException | IOException e) {
+                log.error("Failed to upload sketch to Arduino", e);
+                throw new CommunicationException("Failed to upload sketch to Arduino", e);
+            }
+        } else {
+            log.info("Arduino connection established successfully");
+        }
+    }
+
+    private boolean testConnection() {
+        try {
+            readRegister(REG_STATUS);
+            return true;
+        } catch (ModbusException e) {
+            log.debug("Connection test failed: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    private void uploadNeutralizerSketch(ArduinoCLI cli, String host) throws URISyntaxException, IOException{
+        URI uri = new URI(host);
+        String path = uri.getPath();
+        int idx = path.lastIndexOf(':');
+        String device = path.substring(0, idx);
+        Path sketch = extractSketchToTemp();
+        cli.upload(
+            sketch.toString(),
+            FQBN,
+            device
+        );
+    }
+
+
+    private Path extractSketchToTemp() throws IOException {
+        String resourcePath = "PhNeutralisation.ino";
+
+        try (InputStream is = getClass()
+                .getClassLoader()
+                .getResourceAsStream(resourcePath)) {
+
+            if (is == null) {
+                throw new FileNotFoundException("Resource not found: " + resourcePath);
+            }
+
+            Path tempDir = Files.createTempDirectory("arduino-sketch-");
+            Path sketchFile = tempDir.resolve(resourcePath);
+
+            Files.copy(is, sketchFile, StandardCopyOption.REPLACE_EXISTING);
+
+            return sketchFile;
+        }
     }
 
     @Override

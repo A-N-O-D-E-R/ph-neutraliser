@@ -23,9 +23,25 @@
         <arduino.dir>${project.basedir}/src/main/arduino</arduino.dir>
         <bun.version>1.1.30</bun.version>
         <arduino-cli.version>0.35.2</arduino-cli.version>
+        <j4ino.version>1.0-SNAPSHOT</j4ino.version>
+        <openapi.version>2.3.0</openapi.version>
     </properties>
 
     <dependencies>
+        <!-- OpenAPI / Swagger -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${openapi.version}</version>
+        </dependency>
+
+        <!-- J4ino - a Arduino CLI Wrapper [Not cloud native] -->
+        <dependency>
+            <groupId>com.anode.arduino</groupId>
+            <artifactId>j4ino</artifactId>
+            <version>${j4ino.version}</version>
+        </dependency>
+
         <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -36,13 +52,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-
-        <!-- OpenAPI / Swagger -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.3.0</version>
         </dependency>
 
         <!-- Lombok -->
@@ -56,7 +65,6 @@
         <dependency>
             <groupId>com.anode</groupId>
             <artifactId>springboot-starter-collection-logging</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
         </dependency>
 
         <!-- Modbus Communication -->
@@ -167,7 +175,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.2</version>
                 <executions>
                     <execution>
                         <id>copy-resource-one</id>
