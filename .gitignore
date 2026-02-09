@@ -9,3 +9,6 @@ certs/*.srl
 src/main/resources/server.p12
 src/main/resources/truststore.p12
 logs/
+
+# node
+**/node_modules
