@@ -1,4 +1,9 @@
 # Local profile - uses mock services (no hardware required)
+spring:
+  autoconfigure:
+    exclude:
+      - com.anode.autoconfiguration.modbus.ModbusAutoConfiguration
+
 server:
   port: 8443
   ssl:
