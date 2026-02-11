@@ -165,8 +165,12 @@ See [docs/MODBUS.md](docs/MODBUS.md)
 | `B2_BUCKET` | B2 bucket name |
 
 
-
+### Certificat Client
 
 ```bash 
 curl https://localhost:8443  --cert certs/client.crt  --key certs/client.key  --cacert certs/ca.crt
 ```
+
+Importer client.p12 dans :
+- Firefox → Paramètres → Vie privée → Certificats
+- Chrome → Certificats système

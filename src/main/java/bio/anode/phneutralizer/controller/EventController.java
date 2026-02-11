@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/events")
+@RequestMapping("/api/events")
 @Tag(name = "Events", description = "APIs for accessing event logs and historical data")
 public class EventController {
 

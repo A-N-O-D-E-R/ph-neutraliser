@@ -21,7 +21,8 @@
         <java.version>25</java.version>
         <frontend.dir>${project.basedir}/src/main/ts</frontend.dir>
         <arduino.dir>${project.basedir}/src/main/arduino</arduino.dir>
-        <bun.version>1.1.30</bun.version>
+        <node.version>v20.20.0</node.version>
+        <pnpm.version>10.20.0</pnpm.version>
         <arduino-cli.version>0.35.2</arduino-cli.version>
         <j4ino.version>1.0-SNAPSHOT</j4ino.version>
         <openapi.version>2.3.0</openapi.version>
@@ -120,17 +121,36 @@
                 <version>1.15.1</version>
                 <configuration>
                     <workingDirectory>${frontend.dir}</workingDirectory>
-                    <bunVersion>v${bun.version}</bunVersion>
+                    <nodeVersion>${node.version}</nodeVersion>
+                    <pnpmVersion>${pnpm.version}</pnpmVersion>
                 </configuration>
                 <executions>
                     <execution>
-                        <!-- optional: you don't really need execution ids, but it looks nice in your build log. -->
-                        <id>install bun</id>
+                        <id>install node and pnpm</id>
                         <goals>
-                            <goal>install-bun</goal>
+                            <goal>install-node-and-pnpm</goal>
                         </goals>
-                        <!-- optional: default phase is "generate-resources" -->
                         <phase>generate-resources</phase>
+                    </execution>
+                    <execution>
+                        <id>pnpm install</id>
+                        <goals>
+                            <goal>pnpm</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>pnpm build</id>
+                        <goals>
+                            <goal>pnpm</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <arguments>run build</arguments>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
