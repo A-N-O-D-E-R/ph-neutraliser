@@ -42,27 +42,27 @@ export function Dashboard() {
         <span style={{
           padding: '0.5rem 1rem',
           borderRadius: '4px',
-          background: status.runningMode === 'AUTOMATIC' ? '#4caf50' : '#666',
+          background: status.data?.runningMode === 'AUTOMATIC' ? '#4caf50' : '#666',
           color: 'white',
         }}>
-          {status.runningMode}
+          {status.data?.runningMode}
         </span>
         <span style={{
           padding: '0.5rem 1rem',
           borderRadius: '4px',
-          background: status.status === 'IDLE' ? '#2196f3' : '#ff9800',
+          background: status.data?.status === 'IDLE' ? '#2196f3' : '#ff9800',
           color: 'white',
         }}>
-          {status.status}
+          {status.data?.status}
         </span>
         {hardware && (
           <span style={{
             padding: '0.5rem 1rem',
             borderRadius: '4px',
-            background: hardware.connected ? '#4caf50' : '#f44336',
+            background: hardware.data?.connected ? '#4caf50' : '#f44336',
             color: 'white',
           }}>
-            {hardware.connected ? 'Connected' : 'Disconnected'}
+            {hardware.data?.connected ? 'Connected' : 'Disconnected'}
           </span>
         )}
       </div>
@@ -74,12 +74,12 @@ export function Dashboard() {
         gap: '1rem',
         marginBottom: '2rem',
       }}>
-        <StatusCard label="Current pH" value={status.currentPh.toFixed(2)} />
-        <StatusCard label="Target pH" value={status.targetPh.toFixed(2)} />
-        <StatusCard label="Temperature" value={status.temperature.toFixed(1)} unit="°C" />
-        <StatusCard label="Acid Level" value={status.acidLevel} level={status.acidLevel} />
-        <StatusCard label="Neutralizer" value={status.neutralizerLevel} level={status.neutralizerLevel} />
-        <StatusCard label="Waste Tank" value={status.wasteLevel} level={status.wasteLevel} />
+        <StatusCard label="Current pH" value={status.data?.currentPh?.toFixed(2)||"UNKOWN"} />
+        <StatusCard label="Target pH" value={status.data?.targetPh?.toFixed(2)||"UNKOWN"} />
+        <StatusCard label="Temperature" value={status?.data?.temperature?.toFixed(1)||"UNKOWN"} unit="°C" />
+        <StatusCard label="Acid Level" value={status.data?.acidLevel||"UNKOWN"} level={status.data?.acidLevel} />
+        <StatusCard label="Neutralizer" value={status.data?.neutralizerLevel||"UNKOWN"} level={status.data?.neutralizerLevel} />
+        <StatusCard label="Waste Tank" value={status.data?.wasteLevel||"UNKOWN"} level={status.data?.wasteLevel} />
       </div>
 
       {/* Mode controls */}
@@ -88,14 +88,14 @@ export function Dashboard() {
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button
             onClick={() => startAuto.mutate()}
-            disabled={status.runningMode === 'AUTOMATIC'}
+            disabled={status.data?.runningMode === 'AUTOMATIC'}
             style={{ padding: '0.75rem 1.5rem' }}
           >
             Start Automatic
           </button>
           <button
             onClick={() => stopAuto.mutate()}
-            disabled={status.runningMode === 'MANUAL'}
+            disabled={status.data?.runningMode === 'MANUAL'}
             style={{ padding: '0.75rem 1.5rem' }}
           >
             Stop Automatic
@@ -147,7 +147,7 @@ export function Dashboard() {
         <h2>Hardware</h2>
         {hardware && (
           <div style={{ marginBottom: '1rem', fontSize: '0.875rem', color: '#666' }}>
-            {hardware.portName} @ {hardware.baudrate} baud | Slave ID: {hardware.slaveId} | FW: {hardware.firmwareVersion}
+            {hardware.data?.portName} @ {hardware.data?.baudrate} baud | Slave ID: {hardware.data?.slaveId} | FW: {hardware.data?.firmwareVersion}
           </div>
         )}
         <button onClick={() => syncTime.mutate()} style={{ padding: '0.75rem 1.5rem' }}>

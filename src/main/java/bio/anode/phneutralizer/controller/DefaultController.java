@@ -22,7 +22,7 @@ public class DefaultController {
     @GetMapping(value = { "/", "" })
     public String redirectToHomePage(HttpServletRequest request) {
         log.info("-------------- redirect request = {} to /index.html", request.getRequestURI());
-        return "redirect:/cecom/";
+        return "redirect:/neutralizer/";
     }
 
     @GetMapping("/whoami")

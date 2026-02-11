@@ -1,5 +1,6 @@
 /target
 /src/main/ts/bun
+/src/main/ts/node
 # TLS
 # TLS / mTLS
 certs/*.p12
@@ -8,6 +9,7 @@ certs/*.crt
 certs/*.srl
 src/main/resources/server.p12
 src/main/resources/truststore.p12
+src/main/resources/static
 logs/
 
 # node

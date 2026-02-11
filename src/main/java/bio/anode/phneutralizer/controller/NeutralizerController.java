@@ -12,7 +12,7 @@ import bio.anode.phneutralizer.dto.*;
 import bio.anode.phneutralizer.service.NeutralizerService;
 
 @RestController
-@RequestMapping("/control")
+@RequestMapping("/api/control")
 @Tag(name = "Neutralizer Control", description = "APIs for controlling the pH neutralization system")
 public class NeutralizerController {
 
