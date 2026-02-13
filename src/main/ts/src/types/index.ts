@@ -8,6 +8,7 @@ export type Status =
 
 export type RunningMode = 'MANUAL' | 'AUTOMATIC'
 
+export type StatusCardLevel = 'OK' |'INFO' | 'WARN' | 'ERROR'
 export type Level = 'OK' | 'LOW' | 'FULL'
 
 export type CalibrationPoint = 'LOW' | 'MID' | 'HIGH'
