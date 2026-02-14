@@ -5,6 +5,8 @@ import type {
   HardwareStatus,
   CalibrationRequest,
   ManualControlRequest,
+  MeasureEvent,
+  NeutralizerEvent,
   ApiResponse,
 } from '../types'
 
@@ -55,4 +57,21 @@ export const neutralizerApi = {
   getHardwareStatus: () => api.get('control/hardware').json<ApiResponse<HardwareStatus>>(),
 
   synchronizeTime: () => api.post('control/sync-time').json<void>(),
+
+  // Events
+  getMeasureEvents: (startDate?: string, endDate?: string) => {
+    const params = new URLSearchParams()
+    if (startDate) params.set('startDate', startDate)
+    if (endDate) params.set('endDate', endDate)
+    const query = params.toString()
+    return api.get(`events/measures${query ? `?${query}` : ''}`).json<MeasureEvent[]>()
+  },
+
+  getStatusEvents: (startDate?: string, endDate?: string) => {
+    const params = new URLSearchParams()
+    if (startDate) params.set('startDate', startDate)
+    if (endDate) params.set('endDate', endDate)
+    const query = params.toString()
+    return api.get(`events/status${query ? `?${query}` : ''}`).json<NeutralizerEvent[]>()
+  },
 }

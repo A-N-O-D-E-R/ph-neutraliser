@@ -112,3 +112,17 @@ export function useSynchronizeTime() {
     mutationFn: neutralizerApi.synchronizeTime,
   })
 }
+
+export function useMeasureEvents(startDate?: string, endDate?: string) {
+  return useQuery({
+    queryKey: ['measureEvents', startDate, endDate],
+    queryFn: () => neutralizerApi.getMeasureEvents(startDate, endDate),
+  })
+}
+
+export function useStatusEvents(startDate?: string, endDate?: string) {
+  return useQuery({
+    queryKey: ['statusEvents', startDate, endDate],
+    queryFn: () => neutralizerApi.getStatusEvents(startDate, endDate),
+  })
+}

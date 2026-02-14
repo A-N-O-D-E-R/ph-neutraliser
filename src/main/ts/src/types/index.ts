@@ -65,3 +65,16 @@ export interface ApiResponse<T> {
   message?: string
   data?: T
 }
+
+export interface MeasureEvent {
+  timestamp: string
+  metricName: string
+  value: number
+  unit: string
+}
+
+export interface NeutralizerEvent {
+  timestamp: string
+  status: Status
+  acidTankState: Level
+}
