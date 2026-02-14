@@ -40,6 +40,7 @@ import {
   Zap,
 } from "lucide-react"
 import { StatusCardWithTarget } from "./StatusCardWithTarget"
+import { PhChart } from "./PhChart"
 
 function DashboardSkeleton() {
   return (
@@ -167,6 +168,11 @@ export function Dashboard() {
             />
           </div>
         </div>
+      </section>
+
+      {/* HISTORY */}
+      <section className="space-y-3">
+        <PhChart />
       </section>
 
       {/* SYSTEM STATUS */}
