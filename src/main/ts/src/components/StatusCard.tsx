@@ -9,6 +9,7 @@ interface Props {
   unit?: string
   level?: StatusCardLevel
   icon?: ReactNode
+  compact?: boolean
 }
 
 const levelStyles: Record<StatusCardLevel, { border: string; bg: string; icon: string }> = {
@@ -34,7 +35,14 @@ const levelStyles: Record<StatusCardLevel, { border: string; bg: string; icon: s
   },
 }
 
-export function StatusCard({ label, value, unit, level, icon }: Props) {
+export function StatusCard({
+  label,
+  value,
+  unit,
+  level,
+  icon,
+  compact = false,
+}: Props) {
   const styles = level ? levelStyles[level] : null
 
   return (
@@ -46,23 +54,50 @@ export function StatusCard({ label, value, unit, level, icon }: Props) {
         styles?.bg
       )}
     >
-      <CardContent className="px-5 py-4">
+      <CardContent
+        className={cn(
+          compact ? "px-4 py-3" : "px-5 py-4"
+        )}
+      >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase mb-1.5">
+            <p
+              className={cn(
+                "font-medium tracking-wide text-muted-foreground uppercase",
+                compact ? "text-[10px] mb-1" : "text-xs mb-1.5"
+              )}
+            >
               {label}
             </p>
-            <p className="text-2xl font-semibold tracking-tight truncate">
+
+            <p
+              className={cn(
+                "tracking-tight truncate",
+                compact ? "text-lg font-semibold" : "text-2xl font-semibold"
+              )}
+            >
               {value}
               {unit && (
-                <span className="text-sm font-normal text-muted-foreground ml-1">
+                <span
+                  className={cn(
+                    "font-normal text-muted-foreground ml-1",
+                    compact ? "text-xs" : "text-sm"
+                  )}
+                >
                   {unit}
                 </span>
               )}
             </p>
           </div>
+
           {icon && (
-            <div className={cn("mt-0.5 shrink-0", styles?.icon)}>
+            <div
+              className={cn(
+                "shrink-0",
+                compact ? "mt-0 text-base" : "mt-0.5 text-xl",
+                styles?.icon
+              )}
+            >
               {icon}
             </div>
           )}

@@ -31,7 +31,6 @@ import {
   RefreshCw,
   Settings2,
   Square,
-  Target,
   Thermometer,
   Timer,
   Trash2,
@@ -40,6 +39,7 @@ import {
   WifiOff,
   Zap,
 } from "lucide-react"
+import { StatusCardWithTarget } from "./StatusCardWithTarget"
 
 function DashboardSkeleton() {
   return (
@@ -119,6 +119,56 @@ export function Dashboard() {
         </div>
       </div>
 
+      {/* MEASUREMENTS */}
+      <section className="space-y-3">
+        <SectionHeader icon={<Beaker className="w-4 h-4" />} title="Measurements" />
+        <div className="grid gap-6 lg:grid-cols-2 items-start">
+          {/* LEFT COLUMN */}
+          <div className="space-y-6">
+            <StatusCardWithTarget
+              label="pH Level"
+              current={status.data?.currentPh}
+              target={status.data?.targetPh}
+              icon={<FlaskConical className="w-5 h-5" />}
+            />
+
+            <StatusCard
+              label="Temperature"
+              value={status.data?.temperature?.toFixed(1) ?? "--"}
+              unit="°C"
+              icon={<Thermometer className="w-5 h-5" />}
+            />
+          </div>
+
+          {/* RIGHT COLUMN – TANKS */}
+          <div className="space-y-3">
+            <StatusCard
+              compact
+              label="Acid Level"
+              value={status.data?.acidLevel ?? "UNKNOWN"}
+              level={status.data?.acidLevel === "FULL" ? "ERROR" : "OK"}
+              icon={<Droplets className="w-4 h-4" />}
+            />
+
+            <StatusCard
+              compact
+              label="Neutralizer"
+              value={status.data?.neutralizerLevel ?? "UNKNOWN"}
+              level={status.data?.neutralizerLevel === "FULL" ? "ERROR" : "OK"}
+              icon={<Beaker className="w-4 h-4" />}
+            />
+
+            <StatusCard
+              compact
+              label="Waste Tank"
+              value={status.data?.wasteLevel ?? "UNKNOWN"}
+              level={status.data?.wasteLevel === "FULL" ? "ERROR" : "OK"}
+              icon={<Trash2 className="w-4 h-4" />}
+            />
+          </div>
+        </div>
+      </section>
+
       {/* SYSTEM STATUS */}
       <section className="space-y-3">
         <SectionHeader icon={<Activity className="w-4 h-4" />} title="System Status" />
@@ -143,47 +193,6 @@ export function Dashboard() {
               icon={isConnected ? <Wifi className="w-5 h-5" /> : <WifiOff className="w-5 h-5" />}
             />
           )}
-        </div>
-      </section>
-
-      {/* MEASUREMENTS */}
-      <section className="space-y-3">
-        <SectionHeader icon={<Beaker className="w-4 h-4" />} title="Measurements" />
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-          <StatusCard
-            label="Current pH"
-            value={status.data?.currentPh?.toFixed(2) ?? "--"}
-            icon={<FlaskConical className="w-5 h-5" />}
-          />
-          <StatusCard
-            label="Target pH"
-            value={status.data?.targetPh?.toFixed(2) ?? "--"}
-            icon={<Target className="w-5 h-5" />}
-          />
-          <StatusCard
-            label="Temperature"
-            value={status.data?.temperature?.toFixed(1) ?? "--"}
-            unit="°C"
-            icon={<Thermometer className="w-5 h-5" />}
-          />
-          <StatusCard
-            label="Acid Level"
-            value={status.data?.acidLevel ?? "UNKNOWN"}
-            level={status.data?.acidLevel === "FULL" ? "ERROR" : "OK"}
-            icon={<Droplets className="w-5 h-5" />}
-          />
-          <StatusCard
-            label="Neutralizer"
-            value={status.data?.neutralizerLevel ?? "UNKNOWN"}
-            level={status.data?.neutralizerLevel === "FULL" ? "ERROR" : "OK"}
-            icon={<Beaker className="w-5 h-5" />}
-          />
-          <StatusCard
-            label="Waste Tank"
-            value={status.data?.wasteLevel ?? "UNKNOWN"}
-            level={status.data?.wasteLevel === "FULL" ? "ERROR" : "OK"}
-            icon={<Trash2 className="w-5 h-5" />}
-          />
         </div>
       </section>
 

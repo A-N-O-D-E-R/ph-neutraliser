@@ -14,11 +14,24 @@ import {
 import {
   LayoutDashboard,
   Cpu,
-  FlaskConical,
   Settings,
 } from "lucide-react"
 
+import { useNavigation, type Page } from "../hooks/use-navigation"
+import { FlaskConical } from "lucide-react"
+
+const navItems: { label: string; page: Page; icon: React.ReactNode }[] = [
+  { label: "Dashboard", page: "dashboard", icon: <LayoutDashboard /> },
+  { label: "Hardware", page: "hardware", icon: <Cpu /> },
+]
+
+const systemItems: { label: string; page: Page; icon: React.ReactNode }[] = [
+  { label: "Settings", page: "settings", icon: <Settings /> },
+]
+
 export function AppSidebar() {
+  const { page, setPage } = useNavigation()
+
   return (
     <Sidebar variant="inset">
 
@@ -43,19 +56,18 @@ export function AppSidebar() {
           <SidebarGroupLabel>Main</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton isActive tooltip="Dashboard">
-                  <LayoutDashboard />
-                  <span>Dashboard</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Hardware">
-                  <Cpu />
-                  <span>Hardware</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {navItems.map((item) => (
+                <SidebarMenuItem key={item.page}>
+                  <SidebarMenuButton
+                    isActive={page === item.page}
+                    tooltip={item.label}
+                    onClick={() => setPage(item.page)}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -65,12 +77,18 @@ export function AppSidebar() {
           <SidebarGroupLabel>System</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Settings">
-                  <Settings />
-                  <span>Settings</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {systemItems.map((item) => (
+                <SidebarMenuItem key={item.page}>
+                  <SidebarMenuButton
+                    isActive={page === item.page}
+                    tooltip={item.label}
+                    onClick={() => setPage(item.page)}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
