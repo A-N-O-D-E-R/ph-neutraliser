@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.util.List;
 
-import bio.anode.phneutralizer.model.Event;
+import bio.anode.phneutralizer.model.event.Event;
 
 @Data
 @Builder

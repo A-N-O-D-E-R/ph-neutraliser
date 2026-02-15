@@ -1,4 +1,4 @@
-package bio.anode.phneutralizer.model;
+package bio.anode.phneutralizer.model.event;
 
 import java.time.LocalDateTime;
 

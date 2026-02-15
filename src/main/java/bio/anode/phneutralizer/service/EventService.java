@@ -5,8 +5,8 @@ import java.util.List;
 import bio.anode.phneutralizer.dto.AvailableDatesResponse;
 import bio.anode.phneutralizer.dto.EventFilterRequest;
 import bio.anode.phneutralizer.dto.EventResponse;
-import bio.anode.phneutralizer.model.MeasureEvent;
-import bio.anode.phneutralizer.model.NeutralizerEvent;
+import bio.anode.phneutralizer.model.event.MeasureEvent;
+import bio.anode.phneutralizer.model.event.NeutralizerEvent;
 
 public interface EventService {
 

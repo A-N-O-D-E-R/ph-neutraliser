@@ -12,8 +12,8 @@ import bio.anode.phneutralizer.dto.EventFilterRequest;
 import bio.anode.phneutralizer.dto.EventResponse;
 import bio.anode.phneutralizer.enums.Level;
 import bio.anode.phneutralizer.enums.Status;
-import bio.anode.phneutralizer.model.MeasureEvent;
-import bio.anode.phneutralizer.model.NeutralizerEvent;
+import bio.anode.phneutralizer.model.event.MeasureEvent;
+import bio.anode.phneutralizer.model.event.NeutralizerEvent;
 import bio.anode.phneutralizer.service.EventService;
 import lombok.extern.slf4j.Slf4j;
 

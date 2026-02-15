@@ -5,6 +5,23 @@ spring:
   application:
     name: ph-neutralizer
 
+  datasource:
+    url: jdbc:sqlite:hardware.db
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        type:
+          preferred_uuid_jdbc_type: VARCHAR
+  sql:
+    init:
+      mode: always
+
 # Modbus Configuration
 modbus:
   connections:
