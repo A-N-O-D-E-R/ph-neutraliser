@@ -57,7 +57,7 @@ export function StatusCardWithTarget({
 
         {/* Current */}
         <div className="text-3xl font-bold tracking-tight">
-          {current !== undefined ? current.toFixed(precision) : "--"}
+          {current !== undefined && current !== null ? current.toFixed(precision) : "--"}
           {unit && (
             <span className="ml-1 text-base font-normal text-muted-foreground">
               {unit}
@@ -69,7 +69,7 @@ export function StatusCardWithTarget({
         <div className="text-sm text-muted-foreground">
           Target:{" "}
           <span className="font-medium text-foreground">
-            {target !== undefined ? target.toFixed(precision) : "--"}
+            {target !== undefined && target !== null ? target.toFixed(precision) : "--"}
           </span>
           {unit}
         </div>

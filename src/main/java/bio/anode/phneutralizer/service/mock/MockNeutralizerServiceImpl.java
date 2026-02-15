@@ -1,6 +1,8 @@
 package bio.anode.phneutralizer.service.mock;
 
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import bio.anode.phneutralizer.dto.CalibrationRequest;
@@ -18,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @Profile({"test", "local"})
@@ -26,6 +29,9 @@ public class MockNeutralizerServiceImpl implements NeutralizerService {
 
     private final EventService eventService;
     private final Random random = new Random();
+    private final AtomicReference<Double> lastPhEvent = new AtomicReference<>();
+    private final AtomicReference<Double> lastTempEvent = new AtomicReference<>();
+    
 
     private NeutralizerConfiguration configuration;
     private RunningMode runningMode = RunningMode.MANUAL;
@@ -36,6 +42,17 @@ public class MockNeutralizerServiceImpl implements NeutralizerService {
         this.configuration = defaultConfiguration();
         log.info("Mock NeutralizerService initialized");
     }
+
+    @EventListener
+    @Async
+    public void handleMeasureEvent(MeasureEvent event) {
+        switch (event.metricName()) {
+            case "ph" -> lastPhEvent.set(event.value());
+            case "degree" -> lastTempEvent.set(event.value());
+            case null, default -> log.warn("Received MeasureEvent with unknown metric name: {}", event.metricName());
+        }
+    }
+
 
     private NeutralizerConfiguration defaultConfiguration() {
         return NeutralizerConfiguration.builder()
@@ -56,24 +73,16 @@ public class MockNeutralizerServiceImpl implements NeutralizerService {
     @Override
     public NeutralizerStatusResponse getStatus() {
         log.debug("[MOCK] Getting neutralizer status");
-
-        double ph = 6.5 + random.nextDouble() * 1.5;
-        double temp = 20.0 + random.nextDouble() * 10.0;
-
-        eventService.archiveEvent(new MeasureEvent(LocalDateTime.now(),"PH",ph,"pH"));
-
-        eventService.archiveEvent(new MeasureEvent(LocalDateTime.now(),"TEMPERATURE",temp,"°C"));
-
         return NeutralizerStatusResponse.builder()
-                .currentPh(ph)
+                .currentPh(lastPhEvent.get())
                 .targetPh(configuration.getPhTarget())
-                .temperature(temp)
+                .temperature(lastTempEvent.get())
                 .status(status)
                 .runningMode(runningMode)
-                .acidLevel(Level.OK)
+                .acidLevel(random.nextBoolean() ? Level.OK : Level.LOW)
                 .neutralizerLevel(random.nextBoolean() ? Level.OK : Level.HIGH)
-                .wasteLevel(Level.OK)
-                .wasteBisLevel(Level.OK)
+                .wasteLevel(random.nextBoolean() ? Level.OK : Level.HIGH)
+                .wasteBisLevel(random.nextBoolean() ? Level.OK : Level.HIGH)
                 .systemTime(LocalDateTime.now())
                 .configuration(configuration)
                 .build();

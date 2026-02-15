@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,6 @@ import bio.anode.phneutralizer.model.SensorUsage;
 import bio.anode.phneutralizer.model.event.MeasureEvent;
 import bio.anode.phneutralizer.repository.HardwareRepository;
 import bio.anode.phneutralizer.service.reader.RawValueReader;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,7 +27,7 @@ public class SensorMonitorService {
 
     private final Map<SensorUsage, SensorMonitor> monitors = new ConcurrentHashMap<>();
     private final TaskScheduler taskScheduler;
-    private final EventService eventService;
+    private final ApplicationEventPublisher eventPublisher;
     private final HardwareRepository hardwareRepository;
     private final RawValueReader reader;
 
@@ -39,7 +39,7 @@ public class SensorMonitorService {
         loadSensors(sensorUsages);
         loadAndScheduleMonitors(sensorUsages);
     }
-    
+
     private void loadAndScheduleMonitors(List<SensorUsage> sensorUsages) {
         log.info("Loading and scheduling monitors for {} sensors", sensorUsages);
         for (SensorUsage usage : sensorUsages) {
@@ -96,11 +96,7 @@ public class SensorMonitorService {
         }
 
         private void onThresholdCrossed(double value, String metricName, String unit) {
-            try {
-                eventService.archiveEvent(new MeasureEvent(LocalDateTime.now(),metricName,value,unit));
-            } catch (Exception e) {
-                // same semantics as before
-            }
+            eventPublisher.publishEvent(new MeasureEvent(LocalDateTime.now(),metricName,value,unit));
         }
 
         private void updateThresholds(double value) {

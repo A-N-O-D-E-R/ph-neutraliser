@@ -2,6 +2,7 @@ package bio.anode.phneutralizer.service.impl;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import com.anode.arduino.ArduinoCLI;
@@ -17,10 +18,12 @@ import bio.anode.phneutralizer.enums.RunningMode;
 import bio.anode.phneutralizer.enums.Status;
 import bio.anode.phneutralizer.exception.CommunicationException;
 import bio.anode.phneutralizer.exception.NeutralizerException;
+import bio.anode.phneutralizer.model.ConnectionParameters;
 import bio.anode.phneutralizer.model.event.MeasureEvent;
 import bio.anode.phneutralizer.model.event.NeutralizerEvent;
 import bio.anode.phneutralizer.service.EventService;
 import bio.anode.phneutralizer.service.NeutralizerService;
+import bio.anode.phneutralizer.service.reader.RawValueReader;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,12 +36,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @Slf4j
 @Profile("!test & !local")
 public class NeutralizerServiceImpl implements NeutralizerService {
 
+    private final AtomicReference<Double> lastPhEvent = new AtomicReference<>();
+    private final AtomicReference<Double> lastTempEvent = new AtomicReference<>();
+    
     private static final String FQBN = "arduino:avr:uno";
 
     // Neutralizer registers
@@ -97,20 +104,24 @@ public class NeutralizerServiceImpl implements NeutralizerService {
     // Commands for REG_RTC_COMMAND
     private static final int CMD_RTC_SYNC = 1;
 
-    private final ModbusIOService modbusService;
+    private final RawValueReader reader;
     private final EventService eventService;
-    private final String connectionName;
-    private final int slaveId;
+    private final ModbusIOService modbusService;
+    private ConnectionParameters statusConnectionParameters;
+    private ConnectionParameters runningModeConnectionParameters;
 
     public NeutralizerServiceImpl(
-            ModbusIOService modbusService,
+            RawValueReader reader,
             EventService eventService,
+            ModbusIOService modbusService,
             @Value("${neutralizer.connection-name}") String connectionName,
             @Value("${neutralizer.slave-id}") int slaveId) {
-        this.modbusService = modbusService;
+        this.reader = reader;
         this.eventService = eventService;
-        this.connectionName = connectionName;
-        this.slaveId = slaveId;
+        this.modbusService = modbusService;
+        this.statusConnectionParameters = new ConnectionParameters(connectionName, slaveId, REG_STATUS, 10, false);
+        this.runningModeConnectionParameters = new ConnectionParameters(connectionName, slaveId, REG_RUNNING_MODE, 10, false);
+       
     }
 
     @PostConstruct
@@ -119,7 +130,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
             log.info("Arduino not responding, attempting to upload sketch...");
             try {
                 ArduinoCLI cli = new ArduinoCLI();
-                uploadNeutralizerSketch(cli, connectionName);
+                uploadNeutralizerSketch(cli, statusConnectionParameters.getName());
                 log.info("Sketch uploaded successfully");
             } catch (URISyntaxException | IOException e) {
                 log.error("Failed to upload sketch to Arduino", e);
@@ -132,9 +143,9 @@ public class NeutralizerServiceImpl implements NeutralizerService {
 
     private boolean testConnection() {
         try {
-            readRegister(REG_STATUS);
+            reader.read(statusConnectionParameters);
             return true;
-        } catch (ModbusException e) {
+        } catch (Exception e) {
             log.debug("Connection test failed: {}", e.getMessage());
             return false;
         }
@@ -174,24 +185,26 @@ public class NeutralizerServiceImpl implements NeutralizerService {
         }
     }
 
+    @EventListener
+    public void handleMeasureEvent(MeasureEvent event) {
+        if ("PH".equals(event.metricName())) {
+            lastPhEvent.set(event.value());
+        } else if ("TEMPERATURE".equals(event.metricName())) {
+            lastTempEvent.set(event.value());
+        }
+
+    }
     @Override
     public NeutralizerStatusResponse getStatus() {
         log.debug("Getting neutralizer status");
         try {
-            double ph = readRegister(REG_PH_MEASURE) / 100.0;
-            double temp = readRegister(REG_TEMPERATURE) / 100.0;
-            Status status = Status.values()[readRegister(REG_STATUS)];
-            RunningMode mode = RunningMode.values()[readRegister(REG_RUNNING_MODE)];
-
-            // Log measure events
-            eventService.archiveEvent(new MeasureEvent(LocalDateTime.now(),"PH",ph,"pH"));
-
-            eventService.archiveEvent(new MeasureEvent(LocalDateTime.now(),"TEMPERATURE",temp,"°C"));
+            Status status = Status.fromValue((Integer)reader.read(statusConnectionParameters));
+            RunningMode mode = RunningMode.fromValue((Integer)reader.read(runningModeConnectionParameters));
 
             return NeutralizerStatusResponse.builder()
-                    .currentPh(ph)
+                    .currentPh(lastPhEvent.get())
                     .targetPh(readRegister(REG_PH_TARGET) / 100.0)
-                    .temperature(temp)
+                    .temperature(lastTempEvent.get())
                     .status(status)
                     .runningMode(mode)
                     .acidLevel(readRegister(REG_ACID_LEVEL) == 0 ? Level.OK : Level.LOW)
@@ -201,7 +214,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
                     .systemTime(readDeviceTime())
                     .configuration(getConfiguration())
                     .build();
-        } catch (ModbusException e) {
+        } catch (Exception e) {
             log.error("Failed to get neutralizer status", e);
             throw new CommunicationException("Failed to communicate with neutralizer", e);
         }
@@ -386,9 +399,9 @@ public class NeutralizerServiceImpl implements NeutralizerService {
         try {
             return HardwareStatusResponse.builder()
                     .connected(true)
-                    .portName(connectionName)
+                    .portName(statusConnectionParameters.getName())
                     .baudrate(38400)
-                    .slaveId(slaveId)
+                    .slaveId(statusConnectionParameters.getSlaveId())
                     .relayStatus(readRegister(REG_RELAY_STATUS))
                     .deviceTime(readDeviceTime())
                     .firmwareVersion("1.0.0")
@@ -422,11 +435,11 @@ public class NeutralizerServiceImpl implements NeutralizerService {
     }
 
     private int readRegister(int address) throws ModbusException {
-        return (int) modbusService.readHoldingRegisters(connectionName, slaveId, address);
+        return (int) modbusService.readHoldingRegisters(statusConnectionParameters.getName(), statusConnectionParameters.getSlaveId(), address);
     }
 
     private void writeRegister(int address, int value) throws ModbusException {
-        modbusService.writeHoldingRegisters(connectionName, slaveId, address, value);
+        modbusService.writeHoldingRegisters(statusConnectionParameters.getName(), statusConnectionParameters.getSlaveId(), address, value);
     }
 
     private void logStatusEvent(Status status) {

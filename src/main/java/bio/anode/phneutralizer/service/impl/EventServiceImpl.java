@@ -1,6 +1,8 @@
 package bio.anode.phneutralizer.service.impl;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.anode.logging.EventMarkers;
@@ -126,6 +128,8 @@ public class EventServiceImpl implements EventService {
         return csv.toString().getBytes(StandardCharsets.UTF_8);
     }
 
+    @Async
+    @EventListener
     @Override
     public void archiveEvent(MeasureEvent event) {
         log.debug("Archiving measure event: {}", event);
