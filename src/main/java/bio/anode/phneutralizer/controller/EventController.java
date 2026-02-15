@@ -11,8 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import bio.anode.phneutralizer.dto.*;
-import bio.anode.phneutralizer.model.MeasureEvent;
-import bio.anode.phneutralizer.model.NeutralizerEvent;
+import bio.anode.phneutralizer.model.event.MeasureEvent;
+import bio.anode.phneutralizer.model.event.NeutralizerEvent;
 import bio.anode.phneutralizer.service.EventService;
 
 import java.time.LocalDateTime;
