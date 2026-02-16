@@ -12,7 +12,7 @@ public class MockRawValueReader implements RawValueReader {
     private final Random random = new Random();
 
     @Override
-    public Object read(bio.anode.phneutralizer.model.ConnectionParameters parameters) throws Exception {
+    public Object read(bio.anode.phneutralizer.model.connection.ConnectionParameters parameters) throws Exception {
         return (random.nextDouble()*1400)+100;
     }
     
