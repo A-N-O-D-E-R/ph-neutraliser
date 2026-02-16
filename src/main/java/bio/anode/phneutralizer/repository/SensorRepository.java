@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import bio.anode.phneutralizer.model.sensor.Sensor;
+import bio.anode.phneutralizer.model.component.sensor.Sensor;
 
 @Repository
 public interface SensorRepository extends JpaRepository<Sensor, UUID> {

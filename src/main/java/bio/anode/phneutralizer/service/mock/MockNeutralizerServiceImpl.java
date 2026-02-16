@@ -49,6 +49,11 @@ public class MockNeutralizerServiceImpl implements NeutralizerService {
         switch (event.metricName()) {
             case "ph" -> lastPhEvent.set(event.value());
             case "degree" -> lastTempEvent.set(event.value());
+            case "cpu_use" -> log.debug("Received CPU usage event: {}%", event.value());
+            case "ram_use" -> log.debug("Received RAM usage event: {}%", event.value());  
+            case "disk_use" -> log.debug("Received Disk usage event: {}%", event.value());
+            case "heap_used" -> log.debug("Received Heap usage event: {}%", event.value());
+            case "cpu_temperature" -> log.debug("Received CPU temperature event: {}°C", event.value());
             case null, default -> log.warn("Received MeasureEvent with unknown metric name: {}", event.metricName());
         }
     }

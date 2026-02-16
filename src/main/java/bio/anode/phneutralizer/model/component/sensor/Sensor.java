@@ -1,37 +1,25 @@
-package bio.anode.phneutralizer.model.sensor;
+package bio.anode.phneutralizer.model.component.sensor;
 
-import java.util.UUID;
-
-import bio.anode.phneutralizer.model.Model;
+import bio.anode.phneutralizer.model.component.NetworkingComponent;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@DiscriminatorValue("SENSOR")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Sensor {
-
-    @Id
-    private UUID id;
-
-    @ManyToOne
-    private Model model;
+public class Sensor extends NetworkingComponent{
 
     @Enumerated(EnumType.STRING)
     private Type type;
-
-    private String serialNumber;
-
-    private int version;
 
     private Double sensibility;
 
@@ -40,5 +28,6 @@ public class Sensor {
     public enum Type {
         PHMETER,
         THERMOMETER,
+        MEMORYMETER,
     }
 }

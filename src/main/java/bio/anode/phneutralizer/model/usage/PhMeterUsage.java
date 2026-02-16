@@ -1,6 +1,7 @@
-package bio.anode.phneutralizer.model;
+package bio.anode.phneutralizer.model.usage;
 
-import bio.anode.phneutralizer.model.sensor.Sensor;
+import bio.anode.phneutralizer.model.component.sensor.Sensor;
+import bio.anode.phneutralizer.model.connection.ConnectionParameters;
 import bio.anode.phneutralizer.service.reader.RawValueReader;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -13,21 +14,20 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class PhMeterUsage extends SensorUsage {
 
-    public PhMeterUsage(Sensor sensor, ConnectionParameters connection, String metricName) {
+    public PhMeterUsage(Sensor sensor, String metricName) {
         if (sensor.getType() != Sensor.Type.PHMETER) {
             throw new IllegalArgumentException("Sensor must be of type PHMETER");
         }
         setId(java.util.UUID.randomUUID());
-        setSensor(sensor);
+        setComponent(sensor);
         setInstalled(true);
         setMetricName(metricName);
-        setConnectionParameters(connection);
     }
 
     @Override
     public double getMesure(RawValueReader reader) {
         try {
-            Object rawValue = reader.read(getConnectionParameters());
+            Object rawValue = reader.read(getSensor().getConnectionParameters());
             return ((Double) rawValue) / 100.0;
         } catch (Exception e) {
             e.printStackTrace();

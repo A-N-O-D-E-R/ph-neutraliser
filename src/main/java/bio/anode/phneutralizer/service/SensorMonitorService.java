@@ -12,8 +12,8 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
 import bio.anode.phneutralizer.exception.ConnectorInstanciationException;
-import bio.anode.phneutralizer.model.ConnectionParameters;
-import bio.anode.phneutralizer.model.SensorUsage;
+import bio.anode.phneutralizer.model.connection.ConnectionParameters;
+import bio.anode.phneutralizer.model.usage.SensorUsage;
 import bio.anode.phneutralizer.model.event.MeasureEvent;
 import bio.anode.phneutralizer.repository.HardwareRepository;
 import bio.anode.phneutralizer.service.reader.RawValueReader;
@@ -61,7 +61,7 @@ public class SensorMonitorService {
 
     private void loadSensors(List<SensorUsage> sensorUsages) throws ConnectorInstanciationException {
 		for (SensorUsage sensorUsage : sensorUsages) {
-			ConnectionParameters sondeConnector = sensorUsage.getConnectionParameters();
+			ConnectionParameters sondeConnector = sensorUsage.getSensor().getConnectionParameters();
 			
 			if (sondeConnector.isManaged() && sensorUsage.isInstalled())
 				try {

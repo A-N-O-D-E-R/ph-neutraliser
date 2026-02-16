@@ -18,7 +18,7 @@ import bio.anode.phneutralizer.enums.RunningMode;
 import bio.anode.phneutralizer.enums.Status;
 import bio.anode.phneutralizer.exception.CommunicationException;
 import bio.anode.phneutralizer.exception.NeutralizerException;
-import bio.anode.phneutralizer.model.ConnectionParameters;
+import bio.anode.phneutralizer.model.connection.ModbusConnectionParameters;
 import bio.anode.phneutralizer.model.event.MeasureEvent;
 import bio.anode.phneutralizer.model.event.NeutralizerEvent;
 import bio.anode.phneutralizer.service.EventService;
@@ -107,8 +107,8 @@ public class NeutralizerServiceImpl implements NeutralizerService {
     private final RawValueReader reader;
     private final EventService eventService;
     private final ModbusIOService modbusService;
-    private ConnectionParameters statusConnectionParameters;
-    private ConnectionParameters runningModeConnectionParameters;
+    private ModbusConnectionParameters statusConnectionParameters;
+    private ModbusConnectionParameters runningModeConnectionParameters;
 
     public NeutralizerServiceImpl(
             RawValueReader reader,
@@ -119,8 +119,12 @@ public class NeutralizerServiceImpl implements NeutralizerService {
         this.reader = reader;
         this.eventService = eventService;
         this.modbusService = modbusService;
-        this.statusConnectionParameters = new ConnectionParameters(connectionName, slaveId, REG_STATUS, 10, false);
-        this.runningModeConnectionParameters = new ConnectionParameters(connectionName, slaveId, REG_RUNNING_MODE, 10, false);
+        this.statusConnectionParameters = new ModbusConnectionParameters(connectionName, slaveId, REG_STATUS);
+        this.statusConnectionParameters.setUpdateFrequencySeconds(10);
+        this.statusConnectionParameters.setManaged(false);
+        this.runningModeConnectionParameters = new ModbusConnectionParameters(connectionName, slaveId, REG_RUNNING_MODE);
+        this.runningModeConnectionParameters.setUpdateFrequencySeconds(10);
+        this.runningModeConnectionParameters.setManaged(false);
        
     }
 
