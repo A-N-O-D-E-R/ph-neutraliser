@@ -7,8 +7,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.anode.arduino.ArduinoCLI;
-import com.anode.modbus.ModbusIOService;
-import com.ghgande.j2mod.modbus.ModbusException;
 
 import bio.anode.phneutralizer.dto.CalibrationRequest;
 import bio.anode.phneutralizer.dto.HardwareStatusResponse;
@@ -25,6 +23,7 @@ import bio.anode.phneutralizer.model.event.NeutralizerEvent;
 import bio.anode.phneutralizer.service.EventService;
 import bio.anode.phneutralizer.service.NeutralizerService;
 import bio.anode.phneutralizer.service.reader.RawValueReader;
+import bio.anode.phneutralizer.service.writer.ValueWriter;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,7 +40,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @Slf4j
-@Profile("!test & !local")
 public class NeutralizerServiceImpl implements NeutralizerService {
 
     private final AtomicReference<Double> lastPhEvent = new AtomicReference<>();
@@ -111,20 +109,20 @@ public class NeutralizerServiceImpl implements NeutralizerService {
     private static final int CMD_RTC_SYNC = 1;
 
     private final RawValueReader reader;
+    private final ValueWriter writer;
     private final EventService eventService;
-    private final ModbusIOService modbusService;
     private ModbusConnectionParameters statusConnectionParameters;
     private ModbusConnectionParameters runningModeConnectionParameters;
 
     public NeutralizerServiceImpl(
             RawValueReader reader,
+            ValueWriter writer,
             EventService eventService,
-            ModbusIOService modbusService,
             @Value("${neutralizer.connection-name}") String connectionName,
             @Value("${neutralizer.slave-id}") int slaveId) {
         this.reader = reader;
+        this.writer = writer;
         this.eventService = eventService;
-        this.modbusService = modbusService;
         this.statusConnectionParameters = new ModbusConnectionParameters(connectionName, slaveId, REG_STATUS);
         this.statusConnectionParameters.setUpdateFrequencySeconds(10);
         this.statusConnectionParameters.setManaged(false);
@@ -256,7 +254,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
                     .acidPulsePeriod(readRegister(REG_ACID_PULSE_PERIOD))
                     .firstNeutralizationHour(readRegister(REG_FIRST_HOUR))
                     .build();
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to get configuration", e);
             throw new CommunicationException("Failed to read configuration", e);
         }
@@ -278,7 +276,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
             writeRegister(REG_ACID_PULSE_PERIOD, config.getAcidPulsePeriod());
             writeRegister(REG_FIRST_HOUR, config.getFirstNeutralizationHour());
             log.info("Configuration updated successfully");
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to update configuration", e);
             throw new CommunicationException("Failed to update configuration", e);
         }
@@ -291,7 +289,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
             writeRegister(REG_COMMAND, CMD_START_AUTO);
             logStatusEvent(Status.IDLE);
             log.info("Automatic mode started");
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to start automatic mode", e);
             throw new NeutralizerException("Failed to start automatic mode", e);
         }
@@ -303,7 +301,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
         try {
             writeRegister(REG_COMMAND, CMD_STOP_AUTO);
             log.info("Switched to manual mode");
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to stop automatic mode", e);
             throw new NeutralizerException("Failed to stop automatic mode", e);
         }
@@ -316,7 +314,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
             writeRegister(REG_COMMAND, CMD_TRIGGER_NEUTRALIZATION);
             logStatusEvent(Status.NEUTRALIZING);
             log.info("Neutralization triggered");
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to trigger neutralization", e);
             throw new NeutralizerException("Failed to trigger neutralization", e);
         }
@@ -330,7 +328,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
             writeRegister(REG_COMMAND, CMD_EMPTY_TANK1);
             logStatusEvent(Status.MANUALLY_EMPTYING_WASTE);
             log.info("Tank 1 emptying started");
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to empty tank 1", e);
             throw new NeutralizerException("Failed to empty tank 1", e);
         }
@@ -344,7 +342,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
             writeRegister(REG_COMMAND, CMD_EMPTY_TANK2);
             logStatusEvent(Status.MANUALLY_EMPTYING_WASTE);
             log.info("Tank 2 emptying started");
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to empty tank 2", e);
             throw new NeutralizerException("Failed to empty tank 2", e);
         }
@@ -358,7 +356,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
             writeRegister(REG_COMMAND, CMD_EMPTY_NEUTRALIZER);
             logStatusEvent(Status.FORCING_EMPTYING_NEUTRALIZER);
             log.info("Neutralizer emptying started");
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to empty neutralizer", e);
             throw new NeutralizerException("Failed to empty neutralizer", e);
         }
@@ -372,7 +370,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
             writeRegister(REG_COMMAND, CMD_ACID_PUMP);
             logStatusEvent(Status.MANUALLY_PUMPING_ACID);
             log.info("Acid pump activated");
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to activate acid pump", e);
             throw new NeutralizerException("Failed to activate acid pump", e);
         }
@@ -385,7 +383,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
             writeRegister(REG_COMMAND, CMD_AGITATION);
             logStatusEvent(Status.MANUALLY_BULLING);
             log.info("Agitation activated");
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to activate agitation", e);
             throw new NeutralizerException("Failed to activate agitation", e);
         }
@@ -406,7 +404,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
             };
             writeRegister(REG_PH_COMMAND, cmd);
             log.info("pH calibration completed");
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to calibrate pH", e);
             throw new NeutralizerException("Failed to calibrate pH", e);
         }
@@ -425,7 +423,7 @@ public class NeutralizerServiceImpl implements NeutralizerService {
                     .deviceTime(readDeviceTime())
                     .firmwareVersion("1.0.0")
                     .build();
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to get hardware status", e);
             throw new CommunicationException("Failed to get hardware status", e);
         }
@@ -440,32 +438,36 @@ public class NeutralizerServiceImpl implements NeutralizerService {
             writeRegister(REG_RTC_SET_TIME_L, (int) (epochSeconds & 0xFFFF));
             writeRegister(REG_RTC_COMMAND, CMD_RTC_SYNC);
             log.info("Device time synchronized");
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.error("Failed to synchronize time", e);
-            throw new CommunicationException("Failed to synchronize time", e);
+            throw e;
         }
     }
 
-    private LocalDateTime readDeviceTime() throws ModbusException {
+    private LocalDateTime readDeviceTime() throws CommunicationException {
         int high = readRegister(REG_RTC_TIME_H);
         int low = readRegister(REG_RTC_TIME_L);
         long epochSeconds = ((long) high << 16) | (low & 0xFFFF);
         return LocalDateTime.ofEpochSecond(epochSeconds, 0, java.time.ZoneOffset.UTC);
     }
 
-    private int readRegister(int address) throws ModbusException {
-        return (int) modbusService.readHoldingRegisters(statusConnectionParameters.getName(), statusConnectionParameters.getSlaveId(), address);
+    private int readRegister(int address) throws CommunicationException {
+        try {
+            return ((Number) reader.read(new ModbusConnectionParameters(statusConnectionParameters.getName(), statusConnectionParameters.getSlaveId(), address))).intValue();
+        } catch (Exception e) {
+            throw new CommunicationException("Failed to read register " + address, e);
+        }
     }
 
-    private void writeRegister(int address, int value) throws ModbusException {
-        modbusService.writeHoldingRegisters(statusConnectionParameters.getName(), statusConnectionParameters.getSlaveId(), address, value);
+    private void writeRegister(int address, int value) throws CommunicationException {
+        writer.write(value, new ModbusConnectionParameters(statusConnectionParameters.getName(), statusConnectionParameters.getSlaveId(), address));
     }
 
     private void logStatusEvent(Status status) {
         try {
             Level acidLevel = readRegister(REG_ACID_LEVEL) == 0 ? Level.OK : Level.LOW;
             eventService.archiveEvent(new NeutralizerEvent(LocalDateTime.now(),status,acidLevel));
-        } catch (ModbusException e) {
+        } catch (CommunicationException e) {
             log.warn("Failed to read acid level for event logging", e);
             eventService.archiveEvent(new NeutralizerEvent(LocalDateTime.now(),status,null));
         }
