@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import bio.anode.phneutralizer.model.usage.SensorUsage;
 
 @Repository
-public interface HardwareRepository extends JpaRepository<SensorUsage, UUID> {
+public interface HardwareRepository extends JpaRepository<SensorUsage<?>, UUID> {
     
 }

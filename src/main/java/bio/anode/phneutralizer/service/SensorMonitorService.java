@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class SensorMonitorService {
 
-    private final Map<SensorUsage, SensorMonitor> monitors = new ConcurrentHashMap<>();
+    private final Map<SensorUsage<?>, SensorMonitor> monitors = new ConcurrentHashMap<>();
     private final TaskScheduler taskScheduler;
     private final ApplicationEventPublisher eventPublisher;
     private final HardwareRepository hardwareRepository;
@@ -33,16 +33,16 @@ public class SensorMonitorService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void init() throws ConnectorInstanciationException {
-        List<SensorUsage> sensorUsages = hardwareRepository.findAll();
+        List<SensorUsage<?>> sensorUsages = hardwareRepository.findAll();
         log.info("nb loaded sensors : {}", sensorUsages.size());
 
         loadSensors(sensorUsages);
         loadAndScheduleMonitors(sensorUsages);
     }
 
-    private void loadAndScheduleMonitors(List<SensorUsage> sensorUsages) {
+    private void loadAndScheduleMonitors(List<SensorUsage<?>> sensorUsages) {
         log.info("Loading and scheduling monitors for {} sensors", sensorUsages);
-        for (SensorUsage usage : sensorUsages) {
+        for (SensorUsage<?> usage : sensorUsages) {
 
             if (usage == null || !usage.isInstalled()) {
                 continue;
@@ -59,8 +59,8 @@ public class SensorMonitorService {
         }
     }
 
-    private void loadSensors(List<SensorUsage> sensorUsages) throws ConnectorInstanciationException {
-		for (SensorUsage sensorUsage : sensorUsages) {
+    private void loadSensors(List<SensorUsage<?>> sensorUsages) throws ConnectorInstanciationException {
+		for (SensorUsage<?> sensorUsage : sensorUsages) {
 			ConnectionParameters sondeConnector = sensorUsage.getSensor().getConnectionParameters();
 			
 			if (sondeConnector.isManaged() && sensorUsage.isInstalled())
@@ -75,11 +75,12 @@ public class SensorMonitorService {
 
     public class SensorMonitor {
 
-        private final SensorUsage sensorUsage;
+        private final SensorUsage<?> sensorUsage;
         private double highThreshold;
         private double lowThreshold;
+        private Object lastValue;
 
-        public SensorMonitor(SensorUsage sensorUsage) {
+        public SensorMonitor(SensorUsage<?> sensorUsage) {
             this.sensorUsage = sensorUsage;
             double s = sensorUsage.getSensibilite();
             this.highThreshold = s;
@@ -87,16 +88,24 @@ public class SensorMonitorService {
         }
 
         public void check() {
-            double value = sensorUsage.getMesure(reader);
+            Object value = sensorUsage.getMesure(reader);
 
-            if (value > highThreshold || value < lowThreshold) {
-                onThresholdCrossed(value,sensorUsage.getMetricName(),sensorUsage.getUnit());
-                updateThresholds(value);
+            if (value instanceof Number numValue) {
+                double d = numValue.doubleValue();
+                if (d > highThreshold || d < lowThreshold) {
+                    onThresholdCrossed(value, sensorUsage.getMetricName(), sensorUsage.getUnit());
+                    updateThresholds(d);
+                }
+            } else {
+                if (!value.equals(lastValue)) {
+                    onThresholdCrossed(value, sensorUsage.getMetricName(), sensorUsage.getUnit());
+                }
             }
+            lastValue = value;
         }
 
-        private void onThresholdCrossed(double value, String metricName, String unit) {
-            eventPublisher.publishEvent(new MeasureEvent(LocalDateTime.now(),metricName,value,unit));
+        private void onThresholdCrossed(Object value, String metricName, String unit) {
+            eventPublisher.publishEvent(new MeasureEvent(LocalDateTime.now(), metricName, value, unit));
         }
 
         private void updateThresholds(double value) {
@@ -104,6 +113,6 @@ public class SensorMonitorService {
             this.highThreshold = value + s;
             this.lowThreshold = value - s;
         }
-}
+    }
 
 }

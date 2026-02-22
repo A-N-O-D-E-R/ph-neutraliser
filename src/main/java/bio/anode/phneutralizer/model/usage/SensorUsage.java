@@ -20,13 +20,13 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString  
-public abstract class SensorUsage extends NetworkingComponantUsage {
+public abstract class SensorUsage<T> extends NetworkingComponantUsage {
 
     private boolean installed;
 
     private String metricName;
 
-    public abstract double getMesure(RawValueReader reader);
+    public abstract T getMesure(RawValueReader reader);
 
     public double getSensibilite() {
         Double s = ((Sensor) getComponent()).getSensibility();
