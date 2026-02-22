@@ -27,27 +27,27 @@ export const neutralizerApi = {
     api.put('control/configuration', { json: config }).json<void>(),
 
   // Mode control
-  startAutomatic: () => api.post('control/mode/automatic').json<void>(),
+  startAutomatic: () => api.post('control/start').json<void>(),
 
-  stopAutomatic: () => api.post('control/mode/manual').json<void>(),
+  stopAutomatic: () => api.post('control/stop').json<void>(),
 
   // Manual controls
-  triggerNeutralization: () => api.post('control/neutralize').json<void>(),
+  triggerNeutralization: () => api.post('control/trigger').json<void>(),
 
   emptyTank1: (req: ManualControlRequest) =>
-    api.post('control/manual/empty-tank1', { json: req }).json<void>(),
+    api.post('control/empty-tank1', { json: req }).json<void>(),
 
   emptyTank2: (req: ManualControlRequest) =>
-    api.post('control/manual/empty-tank2', { json: req }).json<void>(),
+    api.post('control/empty-tank2', { json: req }).json<void>(),
 
   emptyNeutralizer: (req: ManualControlRequest) =>
-    api.post('control/manual/empty-neutralizer', { json: req }).json<void>(),
+    api.post('control/empty-neutralizer', { json: req }).json<void>(),
 
   activateAcidPump: (req: ManualControlRequest) =>
-    api.post('control/manual/acid-pump', { json: req }).json<void>(),
+    api.post('control/acid-pump', { json: req }).json<void>(),
 
   activateAgitation: (req: ManualControlRequest) =>
-    api.post('control/manual/agitation', { json: req }).json<void>(),
+    api.post('control/agitation', { json: req }).json<void>(),
 
   // Calibration
   calibratePh: (req: CalibrationRequest) =>

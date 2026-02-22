@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import bio.anode.phneutralizer.exception.CommunicationException;
 import bio.anode.phneutralizer.model.connection.ConnectionParameters;
+import bio.anode.phneutralizer.model.connection.ModbusConnectionParameters;
+import bio.anode.phneutralizer.model.connection.SystemConnectionParameters;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -17,18 +19,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MockValueWriter implements ValueWriter {
 
-    private final Map<UUID, Object> store = new ConcurrentHashMap<>();
+    private final Map<String, Object> store = new ConcurrentHashMap<>();
 
     @Override
     public void write(Object value, ConnectionParameters parameters) throws CommunicationException {
         log.debug("Mock write: value={} id={} type={}", value, parameters.getId(), parameters.getClass().getSimpleName());
-        store.put(parameters.getId(), value);
+        if(parameters instanceof ModbusConnectionParameters modbus) {
+            store.put(parameters.getId()+"_"+modbus.getName()+"_"+modbus.getSlaveId()+"_"+modbus.getOffset(), value);
+        } else if (parameters instanceof SystemConnectionParameters system) {
+            store.put(parameters.getId()+"_"+system.getPoolName()+"_"+system.getMetricName(), value);
+        }else{
+            store.put(parameters.getId().toString(), value);
+        }
     }
 
-    public Optional<Object> getStoredValue(UUID id) {
-        if (id == null) {
-            return Optional.empty(); // No logging here to avoid cluttering logs with null IDs
+    public Optional<Object> getStoredValue(String key) {
+        if (key == null) {
+            return Optional.empty(); // No logging here to avoid cluttering logs with null keys
         }
-        return Optional.ofNullable(store.get(id));
+        return Optional.ofNullable(store.get(key));
     }
 }

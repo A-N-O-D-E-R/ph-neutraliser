@@ -19,12 +19,16 @@ public class MockRawValueReader implements RawValueReader {
 
     @Override
     public Object read(ConnectionParameters parameters) throws Exception {
-        if(parameters.getId() == null) {
-            log.warn("Attempting to read with null ID for parameters: {}", parameters.toString());
-            return defaultValue(parameters);
-        }
-        return mockValueWriter.getStoredValue(parameters.getId())
+        if(parameters instanceof ModbusConnectionParameters modbus) {
+             return mockValueWriter.getStoredValue(parameters.getId()+"_"+modbus.getName()+"_"+modbus.getSlaveId()+"_"+modbus.getOffset())
                 .orElseGet(() -> defaultValue(parameters));
+        } else if (parameters instanceof SystemConnectionParameters system) {
+            return mockValueWriter.getStoredValue(parameters.getId()+"_"+system.getPoolName()+"_"+system.getMetricName())
+                .orElseGet(() -> defaultValue(parameters));
+        } else {
+            return mockValueWriter.getStoredValue(parameters.getId().toString())
+                .orElseGet(() -> defaultValue(parameters));
+        }
     }
 
     private Object defaultValue(ConnectionParameters parameters) {

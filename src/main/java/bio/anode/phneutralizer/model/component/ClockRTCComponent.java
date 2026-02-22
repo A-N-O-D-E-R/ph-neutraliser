@@ -39,6 +39,8 @@ public class ClockRTCComponent extends NetworkingComponent {
 
     private ModbusConnectionParameters atOffset(int delta) {
         ModbusConnectionParameters base = (ModbusConnectionParameters) getConnectionParameters();
-        return new ModbusConnectionParameters(base.getName(), base.getSlaveId(), base.getOffset() + delta);
+        ModbusConnectionParameters newConn= new ModbusConnectionParameters(base.getName(), base.getSlaveId(), base.getOffset() + delta);
+        newConn.setId(base.getId()); // Keep the same ID to ensure it is recognized as the same device in the mock reader/writer
+        return newConn;
     }
 }

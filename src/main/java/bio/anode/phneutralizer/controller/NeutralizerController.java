@@ -112,7 +112,7 @@ public class NeutralizerController {
         neutralizerService.activateAcidPump(timing);
         return ResponseEntity.ok(ApiResponse.success("Acid pump activated"));
     }
-
+    
     @PostMapping("/agitation")
     @Operation(summary = "Activate agitation", description = "Manually activates agitation")
     public ResponseEntity<ApiResponse<Void>> activateAgitation(

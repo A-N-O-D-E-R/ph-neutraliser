@@ -3,6 +3,7 @@ package bio.anode.phneutralizer.model.connection;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @DiscriminatorValue("SYSTEM")
+@EqualsAndHashCode(callSuper = true)
 public class SystemConnectionParameters extends ConnectionParameters {
     private String poolName;
     private String metricName;

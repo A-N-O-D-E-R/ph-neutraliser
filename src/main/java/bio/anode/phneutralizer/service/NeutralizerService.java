@@ -161,7 +161,7 @@ public class NeutralizerService  {
         log.info("Emptying tank 1 for {} seconds", duration);
         try {
             neutraliser.emptyTank1(duration, writer);
-            logStatusEvent(Status.MANUALLY_EMPTYING_WASTE);
+            logStatusEvent(Status.FORCING_EMPTYING_WASTE);
             log.info("Tank 1 emptying started");
         } catch (CommunicationException e) {
             log.error("Failed to empty tank 1", e);
@@ -174,7 +174,7 @@ public class NeutralizerService  {
         log.info("Emptying tank 2 for {} seconds", duration);
         try {
             neutraliser.emptyTank2(duration, writer);
-            logStatusEvent(Status.MANUALLY_EMPTYING_WASTE);
+            logStatusEvent(Status.FORCING_EMPTYING_WASTE);
             log.info("Tank 2 emptying started");
         } catch (CommunicationException e) {
             log.error("Failed to empty tank 2", e);
