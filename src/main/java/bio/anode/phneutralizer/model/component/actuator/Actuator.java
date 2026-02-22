@@ -17,7 +17,7 @@ import lombok.Setter;
 public class Actuator extends NetworkingComponent {
     private transient State state = State.UNKNOWN;
     @Enumerated(EnumType.STRING)
-	private Type type;
+	private Type actuatorType;
 
 
     public enum Type{
