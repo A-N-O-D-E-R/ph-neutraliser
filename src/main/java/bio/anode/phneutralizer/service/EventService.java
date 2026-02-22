@@ -1,30 +1,210 @@
 package bio.anode.phneutralizer.service;
 
-import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+import com.anode.logging.EventMarkers;
+import com.anode.logging.reader.EventLogReader;
+import com.anode.logging.reader.EventXmlLogReader;
 
 import bio.anode.phneutralizer.dto.AvailableDatesResponse;
 import bio.anode.phneutralizer.dto.EventFilterRequest;
 import bio.anode.phneutralizer.dto.EventResponse;
+import bio.anode.phneutralizer.enums.Level;
+import bio.anode.phneutralizer.enums.Status;
 import bio.anode.phneutralizer.model.event.MeasureEvent;
 import bio.anode.phneutralizer.model.event.NeutralizerEvent;
+import lombok.extern.slf4j.Slf4j;
 
-public interface EventService {
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
-    EventResponse getMeasureEvents(EventFilterRequest filter);
+@Service
+@Slf4j
+public class EventService {
 
-    EventResponse getNeutralizerEvents(EventFilterRequest filter);
+    private final EventLogReader jsonReader;
+    private final EventXmlLogReader xmlReader;
 
-    List<MeasureEvent> getPhEvents(EventFilterRequest filter);
+    public EventService(@Value("${logging.event.path}") Path archiveDir) {
+        this.jsonReader = new EventLogReader(archiveDir);
+        this.xmlReader = new EventXmlLogReader(archiveDir);
+    }
 
-    List<MeasureEvent> getTemperatureEvents(EventFilterRequest filter);
+    
+    public EventResponse getMeasureEvents(EventFilterRequest filter) {
+        log.debug("Getting measure events with filter: {}", filter);
 
-    List<NeutralizerEvent> getStatusEvents(EventFilterRequest filter);
+        List<MeasureEvent> events = readMeasureEvents(filter);
+        List<MeasureEvent> filtered = filterMeasureEvents(events, filter);
 
-    AvailableDatesResponse getAvailableDates();
+        return EventResponse.builder()
+                .events(filtered)
+                .totalCount(filtered.size())
+                .startDate(filter.getStartDate() != null ? filter.getStartDate().toLocalDate() : null)
+                .endDate(filter.getEndDate() != null ? filter.getEndDate().toLocalDate() : null)
+                .build();
+    }
 
-    byte[] exportEventsAsCsv(EventFilterRequest filter);
+    
+    public EventResponse getNeutralizerEvents(EventFilterRequest filter) {
+        log.debug("Getting neutralizer events with filter: {}", filter);
 
-    void archiveEvent(MeasureEvent event);
+        List<NeutralizerEvent> events = readNeutralizerEvents(filter);
+        List<NeutralizerEvent> filtered = filterNeutralizerEvents(events, filter);
 
-    void archiveEvent(NeutralizerEvent event);
+        return EventResponse.builder()
+                .events(filtered)
+                .totalCount(filtered.size())
+                .startDate(filter.getStartDate() != null ? filter.getStartDate().toLocalDate() : null)
+                .endDate(filter.getEndDate() != null ? filter.getEndDate().toLocalDate() : null)
+                .build();
+    }
+
+    
+    public List<MeasureEvent> getPhEvents(EventFilterRequest filter) {
+        log.debug("Getting pH events");
+        EventFilterRequest phFilter = EventFilterRequest.builder()
+                .startDate(filter.getStartDate())
+                .endDate(filter.getEndDate())
+                .logType(filter.getLogType())
+                .metricName("PH")
+                .build();
+        return filterMeasureEvents(readMeasureEvents(phFilter), phFilter);
+    }
+
+    
+    public List<MeasureEvent> getTemperatureEvents(EventFilterRequest filter) {
+        log.debug("Getting temperature events");
+        EventFilterRequest tempFilter = EventFilterRequest.builder()
+                .startDate(filter.getStartDate())
+                .endDate(filter.getEndDate())
+                .logType(filter.getLogType())
+                .metricName("TEMPERATURE")
+                .build();
+        return filterMeasureEvents(readMeasureEvents(tempFilter), tempFilter);
+    }
+
+    
+    public List<NeutralizerEvent> getStatusEvents(EventFilterRequest filter) {
+        log.debug("Getting status events");
+        return filterNeutralizerEvents(readNeutralizerEvents(filter), filter);
+    }
+
+    
+    public AvailableDatesResponse getAvailableDates() {
+        log.debug("Getting available dates");
+        List<LocalDate> dates = jsonReader.getAvailableDates();
+        return AvailableDatesResponse.builder()
+                .availableDates(dates)
+                .build();
+    }
+
+    
+    public byte[] exportEventsAsCsv(EventFilterRequest filter) {
+        log.debug("Exporting events as CSV with filter: {}", filter);
+        StringBuilder csv = new StringBuilder();
+
+        if (filter.getIncludeHeader() == null || filter.getIncludeHeader()) {
+            csv.append("Timestamp,Metric,Value,Unit\n");
+        }
+
+        List<MeasureEvent> events = filterMeasureEvents(readMeasureEvents(filter), filter);
+        for (MeasureEvent event : events) {
+            csv.append(String.format("%s,%s,%.2f,%s\n",
+                    event.timestamp(),
+                    event.metricName(),
+                    event.value(),
+                    event.unit()));
+        }
+
+        return csv.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    @Async
+    @EventListener
+    
+    public void archiveEvent(MeasureEvent event) {
+        log.debug("Archiving measure event: {}", event);
+        log.info(EventMarkers.EVENT, "{}", event);
+    }
+
+    
+    public void archiveEvent(NeutralizerEvent event) {
+        log.debug("Archiving neutralizer event: {}", event);
+        log.info(EventMarkers.EVENT, "{}", event);
+    }
+
+    private List<MeasureEvent> readMeasureEvents(EventFilterRequest filter) {
+        if ("xml".equalsIgnoreCase(filter.getLogType())) {
+            return xmlReader.readEvents("MeasureEvent", attrs ->new  MeasureEvent(
+                    parseDateTime(attrs.get("timestamp")),
+                    attrs.get("metricName"),
+                    parseDouble(attrs.get("value")),
+                    (attrs.get("unit"))),
+                filter.getStartDate(), filter.getEndDate());
+        }
+        // Default to JSON
+        return jsonReader.readEvents(
+            MeasureEvent.class,
+            "MeasureEvent",
+            filter.getStartDate(),
+            filter.getEndDate()
+        );
+    }
+
+    private List<NeutralizerEvent> readNeutralizerEvents(EventFilterRequest filter) {
+        if ("xml".equalsIgnoreCase(filter.getLogType())) {
+            return xmlReader.readEvents("NeutralizerEvent", attrs -> new NeutralizerEvent(
+                    parseDateTime(attrs.get("timestamp")),
+                    parseEnum(Status.class, attrs.get("status")),
+                    parseEnum(Level.class, attrs.get("acidTankState"))),
+                filter.getStartDate(), filter.getEndDate());
+        }
+        // Default to JSON
+        return jsonReader.readEvents(
+            NeutralizerEvent.class,
+            "NeutralizerEvent",
+            filter.getStartDate(),
+            filter.getEndDate()
+        );
+    }
+
+    private LocalDateTime parseDateTime(String value) {
+        if (value == null || value.isBlank()) return null;
+        return LocalDateTime.parse(value);
+    }
+
+    private Double parseDouble(String value) {
+        if (value == null || value.isBlank()) return null;
+        return Double.parseDouble(value);
+    }
+
+    private <E extends Enum<E>> E parseEnum(Class<E> enumType, String value) {
+        if (value == null || value.isBlank()) return null;
+        return Enum.valueOf(enumType, value);
+    }
+
+    private List<MeasureEvent> filterMeasureEvents(List<MeasureEvent> events, EventFilterRequest filter) {
+        return events.stream()
+                .filter(e -> filter.getStartDate() == null || !e.timestamp().isBefore(filter.getStartDate()))
+                .filter(e -> filter.getEndDate() == null || !e.timestamp().isAfter(filter.getEndDate()))
+                .filter(e -> filter.getMetricName() == null || filter.getMetricName().equalsIgnoreCase(e.metricName()))
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    private List<NeutralizerEvent> filterNeutralizerEvents(List<NeutralizerEvent> events, EventFilterRequest filter) {
+        return events.stream()
+                .filter(e -> filter.getStartDate() == null || !e.timestamp().isBefore(filter.getStartDate()))
+                .filter(e -> filter.getEndDate() == null || !e.timestamp().isAfter(filter.getEndDate()))
+                .sorted()
+                .collect(Collectors.toList());
+    }
 }
