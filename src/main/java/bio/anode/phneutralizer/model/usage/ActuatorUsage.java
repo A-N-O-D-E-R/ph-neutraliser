@@ -1,5 +1,8 @@
 package bio.anode.phneutralizer.model.usage;
 
-public class ActuatorUsage extends NetworkingComponantUsage {
-    
+import jakarta.persistence.MappedSuperclass;
+
+@MappedSuperclass
+public abstract class ActuatorUsage extends NetworkingComponantUsage {
+
 }
