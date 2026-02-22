@@ -21,6 +21,12 @@ All the High ph Liquid arrive in one of the waste tank, and depending on the con
 
 Want to build your own ph-neutralizer go to [build instruction](./docs/BUILD_INSTRUCTION.md)
 
+## Architecture
+
+Hardware is modelled as two parallel hierarchies — **Component** (physical identity + connection config) and **Usage** (business logic). This keeps the hardware catalogue separate from application behaviour and makes mock/real switching trivial.
+
+See [docs/component-usage-model.md](./docs/component-usage-model.md) for details.
+
 ## Features & Technologies
 
 - **Modbus RTU** - Hardware communication via serial port
@@ -28,6 +34,7 @@ Want to build your own ph-neutralizer go to [build instruction](./docs/BUILD_INS
 - **Auto Archive** - Gzip compression of old logs (7+ days)
 - **B2 Backup** - Cloud backup to Backblaze B2
 - **React Frontend** - Dashboard with TanStack Query
+- **SQLite** - Hardware config persisted in `hardware.db` (components, usages, connection parameters)
 - **Mock Mode** - Development without hardware
 
 ## Requirements
@@ -165,12 +172,14 @@ See [docs/MODBUS.md](docs/MODBUS.md)
 | `B2_BUCKET` | B2 bucket name |
 
 
-### Certificat Client
+## mTLS (optional)
 
-```bash 
-curl https://localhost:8443  --cert certs/client.crt  --key certs/client.key  --cacert certs/ca.crt
+The server can run with mutual TLS on port 8443. Test with:
+
+```bash
+curl https://localhost:8443 --cert certs/client.crt --key certs/client.key --cacert certs/ca.crt
 ```
 
-Importer client.p12 dans :
-- Firefox → Paramètres → Vie privée → Certificats
-- Chrome → Certificats système
+Import `client.p12` into your browser to access the UI:
+- Firefox → Settings → Privacy → Certificates
+- Chrome → System certificates

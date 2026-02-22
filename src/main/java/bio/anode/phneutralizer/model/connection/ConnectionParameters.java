@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -21,6 +22,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 @AllArgsConstructor
 public abstract class ConnectionParameters {
     @Id
