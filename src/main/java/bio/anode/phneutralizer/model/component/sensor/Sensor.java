@@ -19,7 +19,7 @@ import lombok.Setter;
 public class Sensor extends NetworkingComponent{
 
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private Type sensorType;
 
     private Double sensibility;
 
