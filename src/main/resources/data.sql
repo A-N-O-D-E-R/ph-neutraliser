@@ -50,3 +50,32 @@ INSERT OR REPLACE INTO sensor_usage (id, usage_type, component_id, installed, ac
 -- EmbededComputeUsage
 INSERT OR REPLACE INTO embeded_compute_usage (id, component_id, accessible, name, version, thermometer_cpu_usage_id, memorymetre_ram_usage_id, memorymetre_disque_usage_id, memorymetre_heap_usage_id) VALUES
     ('f1b2c3d4-0000-0000-0000-000000000001', 'c1b2c3d4-0000-0000-0000-000000000010', true, 'rpi4', 1, 'd1b2c3d4-0000-0000-0000-000000000003', 'd1b2c3d4-0000-0000-0000-000000000004', 'd1b2c3d4-0000-0000-0000-000000000005', 'd1b2c3d4-0000-0000-0000-000000000006');
+
+-- Supplier
+INSERT OR REPLACE INTO supplier (id, name, type) VALUES
+    ('a1b2c3d4-0000-0000-0000-000000000003', 'Arduino', 'SHOP');
+
+-- Models
+INSERT OR REPLACE INTO model (id, name, supplier_reference, supplier_id) VALUES
+    ('b1b2c3d4-0000-0000-0000-000000000006', 'Neutralizer Controller', 'ARD-UNO-R3', 'a1b2c3d4-0000-0000-0000-000000000003'),
+    ('b1b2c3d4-0000-0000-0000-000000000007', 'DS3231 RTC', 'DS3231', 'a1b2c3d4-0000-0000-0000-000000000003');
+
+-- Connection parameters for neutralizer actuator (base = REG_COMMAND = offset 0)
+-- and RTC clock (base = REG_RTC_COMMAND = offset 20)
+INSERT OR REPLACE INTO connection_parameters (id, connection_type, update_frequency_seconds, managed, name, slave_id, offset) VALUES
+    ('e1b2c3d4-0000-0000-0000-000000000007', 'MODBUS', 10, false, 'neutralizer', 1, 0),
+    ('e1b2c3d4-0000-0000-0000-000000000008', 'MODBUS', 60, false, 'neutralizer', 1, 20);
+
+-- Components
+INSERT OR REPLACE INTO component (id, component_type, model_id, serial_number, version, connection_parameters_id, type) VALUES
+    ('c1b2c3d4-0000-0000-0000-000000000011', 'NEUTRALIZER_ACTUATOR', 'b1b2c3d4-0000-0000-0000-000000000006', 'ARD-001', 1, 'e1b2c3d4-0000-0000-0000-000000000007', 'AUTOMATA');
+INSERT OR REPLACE INTO component (id, component_type, model_id, serial_number, version, connection_parameters_id) VALUES
+    ('c1b2c3d4-0000-0000-0000-000000000012', 'CLOCK_RTC', 'b1b2c3d4-0000-0000-0000-000000000007', 'DS3231-001', 1, 'e1b2c3d4-0000-0000-0000-000000000008');
+
+-- PhNeutraliserUsage
+INSERT OR REPLACE INTO ph_neutraliser_usage (id, component_id, accessible, name, version) VALUES
+    ('f2b2c3d4-0000-0000-0000-000000000001', 'c1b2c3d4-0000-0000-0000-000000000011', true, 'neutralizer-actuator', 1);
+
+-- ClockRTCComponentUsage
+INSERT OR REPLACE INTO clock_rtc_component_usage (id, component_id, accessible, name, version, installed) VALUES
+    ('f2b2c3d4-0000-0000-0000-000000000002', 'c1b2c3d4-0000-0000-0000-000000000012', true, 'neutralizer-clock', 1, true);

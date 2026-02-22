@@ -7,7 +7,13 @@ import bio.anode.phneutralizer.exception.CommunicationException;
 import bio.anode.phneutralizer.model.component.ClockRTCComponent;
 import bio.anode.phneutralizer.service.reader.RawValueReader;
 import bio.anode.phneutralizer.service.writer.ValueWriter;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "clock_rtc_component_usage")
+@NoArgsConstructor
 public class ClockRTCComponentUsage extends IOComponentUsage<LocalDateTime> {
     
     private static final int CMD_RTC_SYNC = 1;

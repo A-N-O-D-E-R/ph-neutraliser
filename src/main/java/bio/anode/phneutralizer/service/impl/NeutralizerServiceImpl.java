@@ -1,6 +1,5 @@
 package bio.anode.phneutralizer.service.impl;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -15,9 +14,9 @@ import bio.anode.phneutralizer.enums.Level;
 import bio.anode.phneutralizer.enums.Status;
 import bio.anode.phneutralizer.exception.CommunicationException;
 import bio.anode.phneutralizer.exception.NeutralizerException;
-import bio.anode.phneutralizer.model.component.ClockRTCComponent;
-import bio.anode.phneutralizer.model.component.actuator.NeutralizerActuatorComponent;
 import bio.anode.phneutralizer.model.connection.ModbusConnectionParameters;
+import bio.anode.phneutralizer.repository.ClockRTCRepository;
+import bio.anode.phneutralizer.repository.PhNeutraliserRepository;
 import bio.anode.phneutralizer.model.event.MeasureEvent;
 import bio.anode.phneutralizer.model.event.NeutralizerEvent;
 import bio.anode.phneutralizer.model.usage.ClockRTCComponentUsage;
@@ -54,47 +53,36 @@ public class NeutralizerServiceImpl implements NeutralizerService {
 
     private static final String FQBN = "arduino:avr:uno";
 
-    private final PhNeutraliserUsage neutraliser;
-    private final ClockRTCComponentUsage clock;
+    private PhNeutraliserUsage neutraliser;
+    private ClockRTCComponentUsage clock;
     private final RawValueReader reader;
     private final ValueWriter writer;
     private final EventService eventService;
+    private final PhNeutraliserRepository neutraliserRepository;
+    private final ClockRTCRepository clockRepository;
 
     public NeutralizerServiceImpl(
             RawValueReader reader,
             ValueWriter writer,
             EventService eventService,
-            @Value("${neutralizer.connection-name}") String connectionName,
-            @Value("${neutralizer.slave-id}") int slaveId) {
+            PhNeutraliserRepository neutraliserRepository,
+            ClockRTCRepository clockRepository) {
         this.reader = reader;
         this.writer = writer;
         this.eventService = eventService;
-        this.neutraliser = buildNeutraliserUsage(connectionName, slaveId);
-        this.clock = buildClockUsage(connectionName, slaveId);
-    }
-
-    private static PhNeutraliserUsage buildNeutraliserUsage(String connectionName, int slaveId) {
-        ModbusConnectionParameters params = new ModbusConnectionParameters(connectionName, slaveId, 0);
-        params.setManaged(false);
-        NeutralizerActuatorComponent component = new NeutralizerActuatorComponent();
-        component.setConnectionParameters(params);
-        PhNeutraliserUsage usage = new PhNeutraliserUsage();
-        usage.setComponent(component);
-        return usage;
-    }
-
-    private static ClockRTCComponentUsage buildClockUsage(String connectionName, int slaveId) {
-        ModbusConnectionParameters params = new ModbusConnectionParameters(connectionName, slaveId, 20);
-        params.setManaged(false);
-        ClockRTCComponent component = new ClockRTCComponent();
-        component.setConnectionParameters(params);
-        ClockRTCComponentUsage usage = new ClockRTCComponentUsage();
-        usage.setComponent(component);
-        return usage;
+        this.neutraliserRepository = neutraliserRepository;
+        this.clockRepository = clockRepository;
     }
 
     @PostConstruct
     public void initCommunication() {
+        this.neutraliser = neutraliserRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No PhNeutraliserUsage found in database"));
+        this.clock = clockRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No ClockRTCComponentUsage found in database"));
+
         if (!testConnection()) {
             log.info("Arduino not responding, attempting to upload sketch...");
             try {

@@ -1,6 +1,9 @@
 package bio.anode.phneutralizer.model.usage;
 
 import bio.anode.phneutralizer.dto.CalibrationRequest;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.NoArgsConstructor;
 import bio.anode.phneutralizer.dto.NeutralizerConfiguration;
 import bio.anode.phneutralizer.enums.CalibrationPoint;
 import bio.anode.phneutralizer.enums.RunningMode;
@@ -10,6 +13,9 @@ import bio.anode.phneutralizer.model.component.actuator.NeutralizerActuatorCompo
 import bio.anode.phneutralizer.service.reader.RawValueReader;
 import bio.anode.phneutralizer.service.writer.ValueWriter;
 
+@Entity
+@Table(name = "ph_neutraliser_usage")
+@NoArgsConstructor
 public class PhNeutraliserUsage extends ActuatorUsage {
 
     // Commands for REG_COMMAND
