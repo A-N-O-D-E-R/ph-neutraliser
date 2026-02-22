@@ -1,6 +1,6 @@
 server:
   port: 8080
-  
+
 spring:
   application:
     name: ph-neutralizer
@@ -8,19 +8,33 @@ spring:
   datasource:
     url: jdbc:sqlite:hardware.db
     driver-class-name: org.sqlite.JDBC
+
   jpa:
     database-platform: org.hibernate.community.dialect.SQLiteDialect
+    show-sql: false
+    open-in-view: false
+    defer-datasource-initialization: false
+
     hibernate:
-      ddl-auto: update
-    show-sql: true
-    defer-datasource-initialization: true
+      ddl-auto: validate
+
     properties:
       hibernate:
         type:
           preferred_uuid_jdbc_type: VARCHAR
+
+        jdbc:
+          batch_size: 30
+          order_inserts: true
+          order_updates: true
+
+        event:
+          merge:
+            entity_copy_observer: disallow
+
   sql:
     init:
-      mode: always
+      mode: never
 
 # Modbus Configuration
 modbus:
@@ -48,7 +62,7 @@ springdoc:
 # Logging
 logging:
   level:
-    bio.altar.phneutralizer: DEBUG
+    "[bio.altar.phneutralizer]": DEBUG
     root: INFO
   event:
     path: ./logs
@@ -56,8 +70,6 @@ logging:
 
 # Scheduler
 scheduler:
-  watcher:
-    status-rate: 10000
   archive:
     cron: "0 0 2 * * *"
   backup:

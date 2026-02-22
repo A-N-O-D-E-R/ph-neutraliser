@@ -3,7 +3,16 @@ spring:
   autoconfigure:
     exclude:
       - com.anode.autoconfiguration.modbus.ModbusAutoConfiguration
-
+  datasource:
+    url: jdbc:sqlite:hardware.db
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  sql:
+    init:
+      mode: always
+      
 server:
   port: 8443
   ssl:
