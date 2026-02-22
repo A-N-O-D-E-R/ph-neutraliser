@@ -34,10 +34,10 @@ public class NeutralizerService  {
     // Using AtomicReference to ensure thread safety when updating these values from asynchronous events
     private final AtomicReference<Double> lastPhEvent = new AtomicReference<>();
     private final AtomicReference<Double> lastTempEvent = new AtomicReference<>();
-    private final AtomicReference<Boolean> lastNeutralizerTankLevel = new AtomicReference<>();
-    private final AtomicReference<Boolean> lastAcidTankLevel = new AtomicReference<>();
-    private final AtomicReference<Boolean> lastWasteLevelEvent = new AtomicReference<>();
-    private final AtomicReference<Boolean> lastWasteBisLevelEvent = new AtomicReference<>();
+    private final AtomicReference<Boolean> lastNeutralizerTankLevel = new AtomicReference<>(false);
+    private final AtomicReference<Boolean> lastAcidTankLevel = new AtomicReference<>(false);
+    private final AtomicReference<Boolean> lastWasteLevelEvent = new AtomicReference<>(false);
+    private final AtomicReference<Boolean> lastWasteBisLevelEvent = new AtomicReference<>(false);
 
     // Injecting repositories and services
     private final PhNeutraliserUsage neutraliser;
@@ -56,14 +56,18 @@ public class NeutralizerService  {
     @Async
     public void handleMeasureEvent(MeasureEvent event) {
         switch (event.metricName()) {
-            case "ph"              -> lastPhEvent.set((Double) event.value());
-            case "degree"          -> lastTempEvent.set((Double) event.value());
-            case "cpu_use"         -> log.debug("Received CPU usage event: {}%", event.value());
-            case "ram_use"         -> log.debug("Received RAM usage event: {}%", event.value());
-            case "disk_use"        -> log.debug("Received Disk usage event: {}%", event.value());
-            case "heap_used"       -> log.debug("Received Heap usage event: {}%", event.value());
-            case "cpu_temperature" -> log.debug("Received CPU temperature event: {}°C", event.value());
-            case null, default     -> log.warn("Received MeasureEvent with unknown metric name: {}", event.metricName());
+            case "ph"                    -> lastPhEvent.set((Double) event.value());
+            case "degree"                -> lastTempEvent.set((Double) event.value());
+            case "neutralizer_tank_level"-> lastNeutralizerTankLevel.set((Boolean) event.value());
+            case "waste_tank_level"      -> lastWasteLevelEvent.set((Boolean) event.value());
+            case "waste_bis_tank_level"  -> lastWasteBisLevelEvent.set((Boolean) event.value());
+            case "acid_tank_level"       -> lastAcidTankLevel.set((Boolean) event.value());
+            case "cpu_use"               -> log.debug("Received CPU usage event: {}%", event.value());
+            case "ram_use"               -> log.debug("Received RAM usage event: {}%", event.value());
+            case "disk_use"              -> log.debug("Received Disk usage event: {}%", event.value());
+            case "heap_used"             -> log.debug("Received Heap usage event: {}%", event.value());
+            case "cpu_temperature"       -> log.debug("Received CPU temperature event: {}°C", event.value());
+            case null, default           -> log.warn("Received MeasureEvent with unknown metric name: {}", event.metricName());
         }
     }
 
