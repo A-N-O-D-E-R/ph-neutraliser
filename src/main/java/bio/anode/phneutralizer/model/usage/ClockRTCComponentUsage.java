@@ -49,8 +49,8 @@ public class ClockRTCComponentUsage extends IOComponentUsage<LocalDateTime> {
 
     @Override
     public LocalDateTime read(RawValueReader reader) throws Exception{
-        int high = (int)reader.read(getClock().getHighRTCReadConnectionParameters());
-        int low = (int)reader.read(getClock().getLowRTCReadConnectionParameters());
+        int high = ((Number) reader.read(getClock().getHighRTCReadConnectionParameters())).intValue();
+        int low = ((Number) reader.read(getClock().getLowRTCReadConnectionParameters())).intValue();
         long epochSeconds = ((long) high << 16) | (low & 0xFFFF);
         return LocalDateTime.ofEpochSecond(epochSeconds, 0, java.time.ZoneOffset.UTC);
 

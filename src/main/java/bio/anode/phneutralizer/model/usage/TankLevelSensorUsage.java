@@ -27,7 +27,7 @@ public class TankLevelSensorUsage extends SensorUsage<Boolean> {
     public Boolean getMesure(RawValueReader reader) {
         try {
             Object rawValue = reader.read(getSensor().getConnectionParameters());
-            return ((int)rawValue == 1);
+            return (((Number) rawValue).intValue() == 1);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
