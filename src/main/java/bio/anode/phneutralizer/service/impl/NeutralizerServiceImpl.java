@@ -3,6 +3,7 @@ package bio.anode.phneutralizer.service.impl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.anode.arduino.ArduinoCLI;
@@ -45,6 +46,11 @@ public class NeutralizerServiceImpl implements NeutralizerService {
 
     private final AtomicReference<Double> lastPhEvent = new AtomicReference<>();
     private final AtomicReference<Double> lastTempEvent = new AtomicReference<>();
+
+    private final AtomicReference<Boolean> lastNeutralizerTankLevel = new AtomicReference<>();
+    private final AtomicReference<Boolean> lastAcidTankLevel = new AtomicReference<>();
+    private final AtomicReference<Boolean> lastWasteLevelEvent = new AtomicReference<>();
+    private final AtomicReference<Boolean> lastWasteBisLevelEvent = new AtomicReference<>();
     
     private static final String FQBN = "arduino:avr:uno";
 
@@ -189,15 +195,24 @@ public class NeutralizerServiceImpl implements NeutralizerService {
         }
     }
 
-    @EventListener
-    public void handleMeasureEvent(MeasureEvent event) {
-        if ("PH".equals(event.metricName())) {
-            lastPhEvent.set(event.value());
-        } else if ("TEMPERATURE".equals(event.metricName())) {
-            lastTempEvent.set(event.value());
-        }
 
+    @EventListener
+    @Async
+    public void handleMeasureEvent(MeasureEvent event) {
+        switch (event.metricName()) {
+            case "ph" -> lastPhEvent.set((Double)event.value());
+            case "degree" -> lastTempEvent.set((Double) event.value());
+            case "cpu_use" -> log.debug("Received CPU usage event: {}%", event.value());
+            case "ram_use" -> log.debug("Received RAM usage event: {}%", event.value());  
+            case "disk_use" -> log.debug("Received Disk usage event: {}%", event.value());
+            case "heap_used" -> log.debug("Received Heap usage event: {}%", event.value());
+            case "cpu_temperature" -> log.debug("Received CPU temperature event: {}°C", event.value());
+            case null, default -> log.warn("Received MeasureEvent with unknown metric name: {}", event.metricName());
+    
+        }
     }
+
+
     @Override
     public NeutralizerStatusResponse getStatus() {
         log.debug("Getting neutralizer status");
@@ -211,10 +226,10 @@ public class NeutralizerServiceImpl implements NeutralizerService {
                     .temperature(lastTempEvent.get())
                     .status(status)
                     .runningMode(mode)
-                    .acidLevel(readRegister(REG_ACID_LEVEL) == 0 ? Level.OK : Level.LOW)
-                    .neutralizerLevel(readRegister(REG_NEUTRALIZER_TANK_FULL) == 1 ? Level.HIGH : Level.OK)
-                    .wasteLevel(readRegister(REG_WASTE_TANK_FULL) == 1 ? Level.HIGH : Level.OK)
-                    .wasteBisLevel(readRegister(REG_WASTE_BIS_TANK_FULL) == 1 ? Level.HIGH : Level.OK)
+                    .acidLevel(lastAcidTankLevel.get() ? Level.OK : Level.LOW)
+                    .neutralizerLevel(lastNeutralizerTankLevel.get() ? Level.HIGH : Level.OK)
+                    .wasteLevel(lastWasteLevelEvent.get() ? Level.HIGH : Level.OK)
+                    .wasteBisLevel(lastWasteBisLevelEvent.get() ? Level.HIGH : Level.OK)
                     .systemTime(readDeviceTime())
                     .configuration(getConfiguration())
                     .build();

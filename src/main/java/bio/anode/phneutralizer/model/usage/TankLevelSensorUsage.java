@@ -5,15 +5,17 @@ import bio.anode.phneutralizer.service.reader.RawValueReader;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
-@DiscriminatorValue("MEMORYMETER")
+@DiscriminatorValue("TANKLEVEL")
 @NoArgsConstructor
-public class MemorymeterUsage extends SensorUsage<Double> {
-
-    public MemorymeterUsage(Sensor sensor, String metricName) {
-        if (sensor.getType() != Sensor.Type.MEMORYMETER) {
-            throw new IllegalArgumentException("Sensor must be of type MEMORYMETER");
+@ToString(callSuper = true)
+public class TankLevelSensorUsage extends SensorUsage<Boolean> {
+    
+    public TankLevelSensorUsage(Sensor sensor, String metricName) {
+        if (sensor.getType() != Sensor.Type.TANKLEVEL) {
+            throw new IllegalArgumentException("Sensor must be of type TANKLEVEL");
         }
         setComponent(sensor);
         setId(java.util.UUID.randomUUID());
@@ -22,15 +24,13 @@ public class MemorymeterUsage extends SensorUsage<Double> {
     }
 
     @Override
-    public Double getMesure(RawValueReader reader) {
+    public Boolean getMesure(RawValueReader reader) {
         try {
             Object rawValue = reader.read(getSensor().getConnectionParameters());
-            return ((Double) rawValue) / 1024.0;
+            return ((int)rawValue == 1);
         } catch (Exception e) {
             e.printStackTrace();
-            return Double.NaN;
+            return false;
         }
     }
-
-
 }

@@ -29,5 +29,6 @@ public class Sensor extends NetworkingComponent{
         PHMETER,
         THERMOMETER,
         MEMORYMETER,
+        TANKLEVEL;
     }
 }

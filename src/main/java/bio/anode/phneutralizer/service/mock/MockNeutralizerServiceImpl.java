@@ -47,8 +47,8 @@ public class MockNeutralizerServiceImpl implements NeutralizerService {
     @Async
     public void handleMeasureEvent(MeasureEvent event) {
         switch (event.metricName()) {
-            case "ph" -> lastPhEvent.set(event.value());
-            case "degree" -> lastTempEvent.set(event.value());
+            case "ph" -> lastPhEvent.set((Double)event.value());
+            case "degree" -> lastTempEvent.set((Double) event.value());
             case "cpu_use" -> log.debug("Received CPU usage event: {}%", event.value());
             case "ram_use" -> log.debug("Received RAM usage event: {}%", event.value());  
             case "disk_use" -> log.debug("Received Disk usage event: {}%", event.value());

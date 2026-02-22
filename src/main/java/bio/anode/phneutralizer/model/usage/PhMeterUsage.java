@@ -12,7 +12,7 @@ import lombok.ToString;
 @DiscriminatorValue("PHMETER")
 @NoArgsConstructor
 @ToString(callSuper = true)
-public class PhMeterUsage extends SensorUsage {
+public class PhMeterUsage extends SensorUsage<Double> {
 
     public PhMeterUsage(Sensor sensor, String metricName) {
         if (sensor.getType() != Sensor.Type.PHMETER) {
@@ -25,7 +25,7 @@ public class PhMeterUsage extends SensorUsage {
     }
 
     @Override
-    public double getMesure(RawValueReader reader) {
+    public Double getMesure(RawValueReader reader) {
         try {
             Object rawValue = reader.read(getSensor().getConnectionParameters());
             return ((Double) rawValue) / 100.0;

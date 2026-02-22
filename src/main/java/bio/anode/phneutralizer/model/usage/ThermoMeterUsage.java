@@ -11,7 +11,7 @@ import lombok.ToString;
 @DiscriminatorValue("THERMOMETER")
 @NoArgsConstructor
 @ToString(callSuper = true)
-public class ThermoMeterUsage extends SensorUsage {
+public class ThermoMeterUsage extends SensorUsage<Double> {
 
     public ThermoMeterUsage(Sensor sensor, String metricName) {
         if (sensor.getType() != Sensor.Type.THERMOMETER) {
@@ -24,7 +24,7 @@ public class ThermoMeterUsage extends SensorUsage {
     }
 
     @Override
-    public double getMesure(RawValueReader reader) {
+    public Double getMesure(RawValueReader reader) {
         try {
             Object rawValue = reader.read(getSensor().getConnectionParameters());
             return ((Double) rawValue) / 100.0;
