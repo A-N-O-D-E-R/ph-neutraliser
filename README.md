@@ -75,8 +75,6 @@ neutralizer:
 
 # Scheduler
 scheduler:
-  watcher:
-    status-rate: 10000          # Poll status every 10s
   archive:
     cron: "0 0 2 * * *"         # Archive at 2 AM
   backup:
@@ -174,12 +172,23 @@ See [docs/MODBUS.md](docs/MODBUS.md)
 
 ## mTLS (optional)
 
-The server can run with mutual TLS on port 8443. Test with:
+In order to have the full experience you will need to generate you own certificat : 
 
+if not already install, install openssl 
+```bash 
+sudo apt install openssl
+```
+
+1. Generate the certificates :
+```bash
+bash  generate-mtls.sh 
+```
+
+2. Test the mutual TLS on port 8443:
 ```bash
 curl https://localhost:8443 --cert certs/client.crt --key certs/client.key --cacert certs/ca.crt
 ```
 
-Import `client.p12` into your browser to access the UI:
+3. Import `client.p12` into your browser to access the UI:
 - Firefox → Settings → Privacy → Certificates
 - Chrome → System certificates
