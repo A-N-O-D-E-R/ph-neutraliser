@@ -3,6 +3,7 @@ package bio.anode.phneutralizer.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.anode.b2.B2Service;
@@ -140,5 +141,16 @@ public class ArchiveService {
                 Files.deleteIfExists(target);
             } catch (IOException ignored) {}
         }
+    }
+
+
+    @Scheduled(cron = "${scheduler.archive.cron}")
+    public void archiveOldLogsScheduled() {
+        archiveOldLogs();
+    }
+
+    @Scheduled(cron = "${scheduler.backup.cron}")
+    public void backupToB2Scheduled() {
+        backupToB2();
     }
 }
