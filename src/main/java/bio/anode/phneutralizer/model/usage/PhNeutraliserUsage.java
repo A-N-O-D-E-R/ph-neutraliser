@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.NoArgsConstructor;
 import bio.anode.phneutralizer.dto.NeutralizerConfiguration;
-import bio.anode.phneutralizer.enums.CalibrationPoint;
 import bio.anode.phneutralizer.enums.RunningMode;
 import bio.anode.phneutralizer.enums.Status;
 import bio.anode.phneutralizer.exception.CommunicationException;
