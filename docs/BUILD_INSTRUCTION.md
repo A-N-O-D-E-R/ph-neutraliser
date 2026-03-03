@@ -23,52 +23,7 @@ The OpenNeutralizer is built around two compute boards:
 
 The Pi communicates with the Arduino over a USB serial link (Modbus RTU, `/dev/ttyACM0`, 38400 baud).
 <p align="center">
-  <svg width="900" height="500" viewBox="0 0 900 500"
-       xmlns="http://www.w3.org/2000/svg"
-       style="max-width:100%; height:auto;"
-       font-family="monospace">
-
-    <!-- Raspberry Pi -->
-    <rect x="150" y="20" width="600" height="80" fill="none" stroke="black" stroke-width="2"/>
-    <text x="450" y="50" text-anchor="middle" font-size="18">Raspberry Pi 4B</text>
-    <text x="450" y="75" text-anchor="middle" font-size="14">(Java app + React frontend)</text>
-
-    <!-- Arrow -->
-    <line x1="450" y1="100" x2="450" y2="150" stroke="black" stroke-width="2"/>
-    <polygon points="445,145 455,145 450,155" fill="black"/>
-    <text x="470" y="130" font-size="12">USB / Modbus RTU (38400 baud)</text>
-
-    <!-- Arduino -->
-    <rect x="100" y="160" width="700" height="300" fill="none" stroke="black" stroke-width="2"/>
-    <text x="450" y="190" text-anchor="middle" font-size="18">Arduino Uno R3</text>
-
-    <!-- EZO-pH -->
-    <rect x="150" y="210" width="120" height="60" fill="none" stroke="black"/>
-    <text x="210" y="240" text-anchor="middle" font-size="14">EZO-pH</text>
-    <text x="210" y="260" text-anchor="middle" font-size="12">(pH meter)</text>
-
-    <!-- EZO-RTD -->
-    <rect x="300" y="210" width="120" height="60" fill="none" stroke="black"/>
-    <text x="360" y="240" text-anchor="middle" font-size="14">EZO-RTD</text>
-    <text x="360" y="260" text-anchor="middle" font-size="12">(temp)</text>
-
-    <!-- DS3231 -->
-    <rect x="450" y="210" width="120" height="60" fill="none" stroke="black"/>
-    <text x="510" y="240" text-anchor="middle" font-size="14">DS3231</text>
-    <text x="510" y="260" text-anchor="middle" font-size="12">(RTC)</text>
-
-    <!-- Relays -->
-    <rect x="600" y="210" width="150" height="60" fill="none" stroke="black"/>
-    <text x="675" y="240" text-anchor="middle" font-size="14">Relays</text>
-    <text x="675" y="260" text-anchor="middle" font-size="12">(pumps / valves)</text>
-
-    <!-- Float switches -->
-    <rect x="200" y="320" width="500" height="80" fill="none" stroke="black"/>
-    <text x="450" y="360" text-anchor="middle" font-size="14">
-      4× Float switches (tank level sensors)
-    </text>
-
-  </svg>
+<img src="./diagram-ph-neutralizer.svg">
 </p>
 **Fluid circuit — 4 tanks:**
 
