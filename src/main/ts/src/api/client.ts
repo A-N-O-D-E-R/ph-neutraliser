@@ -59,19 +59,31 @@ export const neutralizerApi = {
   synchronizeTime: () => api.post('control/sync-time').json<void>(),
 
   // Events
-  getMeasureEvents: (startDate?: string, endDate?: string) => {
+  getMeasureEvents: async (startDate?: string, endDate?: string) => {
     const params = new URLSearchParams()
     if (startDate) params.set('startDate', startDate)
     if (endDate) params.set('endDate', endDate)
     const query = params.toString()
-    return api.get(`events/measures${query ? `?${query}` : ''}`).json<MeasureEvent[]>()
+    const res = await api.get(`events/measures${query ? `?${query}` : ''}`).json<ApiResponse<{ events: MeasureEvent[] }>>()
+    return res.data?.events ?? []
   },
 
-  getStatusEvents: (startDate?: string, endDate?: string) => {
+
+   getPhMeasureEvents: async (startDate?: string, endDate?: string) => {
     const params = new URLSearchParams()
     if (startDate) params.set('startDate', startDate)
     if (endDate) params.set('endDate', endDate)
     const query = params.toString()
-    return api.get(`events/status${query ? `?${query}` : ''}`).json<NeutralizerEvent[]>()
+    const res = await api.get(`events/ph${query ? `?${query}` : ''}`).json<ApiResponse<{ events: MeasureEvent[] }>>()
+    return res.data?.events ?? []
+  },
+
+  getStatusEvents: async (startDate?: string, endDate?: string) => {
+    const params = new URLSearchParams()
+    if (startDate) params.set('startDate', startDate)
+    if (endDate) params.set('endDate', endDate)
+    const query = params.toString()
+    const res = await api.get(`events/status${query ? `?${query}` : ''}`).json<ApiResponse<{ events: NeutralizerEvent[] }>>()
+    return res.data?.events ?? []
   },
 }

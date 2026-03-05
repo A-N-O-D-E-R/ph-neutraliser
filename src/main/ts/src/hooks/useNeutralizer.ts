@@ -120,6 +120,13 @@ export function useMeasureEvents(startDate?: string, endDate?: string) {
   })
 }
 
+export function usePhMeasureEvents(startDate?: string, endDate?: string) {
+  return useQuery({
+    queryKey: ['phMeasureEvents', startDate, endDate],
+    queryFn: () => neutralizerApi.getPhMeasureEvents(startDate, endDate),
+  })
+}
+
 export function useStatusEvents(startDate?: string, endDate?: string) {
   return useQuery({
     queryKey: ['statusEvents', startDate, endDate],

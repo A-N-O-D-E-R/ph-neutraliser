@@ -102,14 +102,15 @@ function mergeEventsToDataPoints(events: MeasureEvent[]): ChartDataPoint[] {
 
     if (event.metricName === "ph" || event.metricName === "pH") {
       existing.ph = event.value
-    } else if (event.metricName === "temperature") {
+      byTimestamp.set(ts, existing)
+    } else if (event.metricName === "temperature" || event.metricName === "degree") {
       existing.temperature = event.value
+      byTimestamp.set(ts, existing)
     }
 
-    byTimestamp.set(ts, existing)
   }
-
-  return Array.from(byTimestamp.values()).sort((a, b) => a.timestamp - b.timestamp)
+  const result = Array.from(byTimestamp.values()).sort((a, b) => a.timestamp - b.timestamp);
+  return result;
 }
 
 function formatTime(ts: number): string {
@@ -154,6 +155,7 @@ export function PhChart() {
     )
     const chartEnd = chartData[chartData.length - 1].timestamp
 
+    console.log("Status events for regions:", sorted)
     return sorted.map((event, i) => {
       const start = new Date(event.timestamp).getTime()
       const end = i < sorted.length - 1
@@ -281,6 +283,7 @@ export function PhChart() {
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4 }}
+                connectNulls
               />
 
               <Line
@@ -291,6 +294,7 @@ export function PhChart() {
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4 }}
+                connectNulls
               />
             </LineChart>
           </ChartContainer>
