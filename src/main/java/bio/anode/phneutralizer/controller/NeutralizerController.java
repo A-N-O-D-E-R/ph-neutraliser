@@ -9,7 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import bio.anode.phneutralizer.dto.*;
+import bio.anode.phneutralizer.service.HardwareInfoService;
 import bio.anode.phneutralizer.service.NeutralizerService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/control")
@@ -19,9 +22,11 @@ public class NeutralizerController {
     private static final Logger log = LoggerFactory.getLogger(NeutralizerController.class);
 
     private final NeutralizerService neutralizerService;
+    private final HardwareInfoService hardwareInfoService;
 
-    public NeutralizerController(NeutralizerService neutralizerService) {
+    public NeutralizerController(NeutralizerService neutralizerService, HardwareInfoService hardwareInfoService) {
         this.neutralizerService = neutralizerService;
+        this.hardwareInfoService = hardwareInfoService;
     }
 
     @GetMapping("/status")
@@ -146,5 +151,19 @@ public class NeutralizerController {
         log.info("POST /control/sync-time");
         neutralizerService.synchronizeTime();
         return ResponseEntity.ok(ApiResponse.success("Device time synchronized"));
+    }
+
+    @GetMapping("/components")
+    @Operation(summary = "Get component list", description = "Returns the list of all hardware components registered in the system")
+    public ResponseEntity<ApiResponse<List<ComponentDto>>> getComponents() {
+        log.debug("GET /control/components");
+        return ResponseEntity.ok(ApiResponse.success(hardwareInfoService.getComponents()));
+    }
+
+    @GetMapping("/usages")
+    @Operation(summary = "Get usage list", description = "Returns the list of all component usages (sensors, actuators, compute, clock)")
+    public ResponseEntity<ApiResponse<List<UsageDto>>> getUsages() {
+        log.debug("GET /control/usages");
+        return ResponseEntity.ok(ApiResponse.success(hardwareInfoService.getUsages()));
     }
 }

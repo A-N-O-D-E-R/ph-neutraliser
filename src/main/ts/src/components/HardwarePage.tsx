@@ -1,11 +1,13 @@
 import {
   useHardwareStatus,
   useSynchronizeTime,
+  useUsages,
 } from "../hooks/useNeutralizer"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { Skeleton } from "./ui/skeleton"
+import type { UsageDto } from "../types"
 import {
   Cpu,
   RefreshCw,
@@ -16,6 +18,12 @@ import {
   Radio,
   Gauge,
   Activity,
+  CheckCircle,
+  XCircle,
+  Thermometer,
+  MemoryStick,
+  Droplets,
+  FlaskConical,
 } from "lucide-react"
 
 const RELAY_LABELS = [
@@ -28,6 +36,20 @@ const RELAY_LABELS = [
   "Relay 7",
   "Relay 8",
 ]
+
+const CATEGORY_COLORS: Record<string, string> = {
+  SENSOR: "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300",
+  ACTUATOR: "bg-orange-100 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300",
+  COMPUTE: "bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300",
+  CLOCK: "bg-teal-100 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300",
+}
+
+const USAGE_TYPE_ICONS: Record<string, React.ReactNode> = {
+  PHMETER: <FlaskConical className="w-4 h-4" />,
+  THERMOMETER: <Thermometer className="w-4 h-4" />,
+  MEMORYMETER: <MemoryStick className="w-4 h-4" />,
+  TANKLEVEL: <Droplets className="w-4 h-4" />,
+}
 
 function relayBits(relayStatus: number): boolean[] {
   return Array.from({ length: 8 }, (_, i) => Boolean((relayStatus >> i) & 1))
@@ -59,8 +81,52 @@ function InfoRow({ label, value, icon }: { label: string; value?: string | numbe
   )
 }
 
+function UsageCard({ usage }: { usage: UsageDto }) {
+  const icon = usage.usageType ? USAGE_TYPE_ICONS[usage.usageType] : <Cpu className="w-4 h-4" />
+  const colorClass = CATEGORY_COLORS[usage.category] ?? "bg-muted text-muted-foreground"
+
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border px-4 py-3 bg-card">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-sm font-medium">
+          {icon}
+          <span>{usage.name}</span>
+        </div>
+        <Badge className={`text-xs ${colorClass}`} variant="outline">
+          {usage.usageType ?? usage.category}
+        </Badge>
+      </div>
+      <div className="text-xs text-muted-foreground space-y-0.5">
+        <p>{usage.componentModelName} · {usage.componentSerialNumber}</p>
+        {usage.metricName && (
+          <p>Metric: <span className="font-medium text-foreground">{usage.metricName}</span>
+            {usage.unit && <span> ({usage.unit})</span>}
+          </p>
+        )}
+      </div>
+      <div className="flex items-center gap-3 text-xs">
+        <span className={`flex items-center gap-1 ${usage.accessible ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}`}>
+          {usage.accessible
+            ? <CheckCircle className="w-3.5 h-3.5" />
+            : <XCircle className="w-3.5 h-3.5" />}
+          Accessible
+        </span>
+        {usage.installed !== undefined && (
+          <span className={`flex items-center gap-1 ${usage.installed ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+            {usage.installed
+              ? <CheckCircle className="w-3.5 h-3.5" />
+              : <XCircle className="w-3.5 h-3.5" />}
+            Installed
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function HardwarePage() {
   const { data: hardware, isLoading, error, refetch, isFetching } = useHardwareStatus()
+  const { data: usagesResponse } = useUsages()
   const syncTime = useSynchronizeTime()
 
   if (isLoading) return <HardwareSkeleton />
@@ -88,6 +154,7 @@ export function HardwarePage() {
   const isConnected = hw?.connected
   const relays = hw !== undefined ? relayBits(hw.relayStatus) : []
   const activeRelayCount = relays.filter(Boolean).length
+  const usages = usagesResponse?.data ?? []
 
   return (
     <div className="space-y-8 p-6 md:p-8 lg:p-10">
@@ -195,12 +262,12 @@ export function HardwarePage() {
         </CardContent>
       </Card>
 
-      {/* RELAY / COMPONENT USAGE */}
+      {/* RELAY STATUS */}
       <Card className="rounded-2xl shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Activity className="w-4 h-4" />
-            Component Usage
+            Relay Status
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
@@ -234,6 +301,26 @@ export function HardwarePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* COMPONENT USAGES */}
+      {usages.length > 0 && (
+        <Card className="rounded-2xl shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Cpu className="w-4 h-4" />
+              Component Usages
+              <Badge variant="secondary" className="ml-auto">{usages.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {usages.map((usage) => (
+                <UsageCard key={usage.id} usage={usage} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

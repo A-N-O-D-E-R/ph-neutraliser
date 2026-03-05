@@ -133,3 +133,17 @@ export function useStatusEvents(startDate?: string, endDate?: string) {
     queryFn: () => neutralizerApi.getStatusEvents(startDate, endDate),
   })
 }
+
+export function useComponents() {
+  return useQuery({
+    queryKey: ['components'],
+    queryFn: neutralizerApi.getComponents,
+  })
+}
+
+export function useUsages() {
+  return useQuery({
+    queryKey: ['usages'],
+    queryFn: neutralizerApi.getUsages,
+  })
+}

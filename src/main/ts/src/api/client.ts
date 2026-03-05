@@ -8,6 +8,8 @@ import type {
   MeasureEvent,
   NeutralizerEvent,
   ApiResponse,
+  ComponentDto,
+  UsageDto,
 } from '../types'
 
 
@@ -86,4 +88,8 @@ export const neutralizerApi = {
     const res = await api.get(`events/status${query ? `?${query}` : ''}`).json<ApiResponse<{ events: NeutralizerEvent[] }>>()
     return res.data?.events ?? []
   },
+
+  getComponents: () => api.get('control/components').json<ApiResponse<ComponentDto[]>>(),
+
+  getUsages: () => api.get('control/usages').json<ApiResponse<UsageDto[]>>(),
 }

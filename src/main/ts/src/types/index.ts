@@ -78,3 +78,26 @@ export interface NeutralizerEvent {
   status: Status
   acidTankState: Level
 }
+
+export interface ComponentDto {
+  id: string
+  type: string
+  serialNumber: string
+  version: number
+  modelName: string
+  supplierName: string
+}
+
+export interface UsageDto {
+  id: string
+  name: string
+  category: 'SENSOR' | 'ACTUATOR' | 'COMPUTE' | 'CLOCK'
+  usageType?: string
+  accessible: boolean
+  version: number
+  componentSerialNumber: string
+  componentModelName: string
+  installed?: boolean
+  metricName?: string
+  unit?: string
+}
