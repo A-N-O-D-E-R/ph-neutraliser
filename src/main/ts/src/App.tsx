@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Dashboard } from './components/Dashboard'
+import { HardwarePage } from './components/HardwarePage'
 import Layout from './components/layout/AppLayout'
 import { NavigationProvider, useNavigation } from './hooks/use-navigation'
 
@@ -19,12 +20,7 @@ function PageContent() {
     case "dashboard":
       return <Dashboard />
     case "hardware":
-      return (
-        <div className="p-6">
-          <h1 className="text-2xl font-bold">Hardware</h1>
-          <p className="text-muted-foreground mt-2">Hardware configuration coming soon.</p>
-        </div>
-      )
+      return <HardwarePage />
     case "settings":
       return (
         <div className="p-6">
