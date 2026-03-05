@@ -3,6 +3,7 @@ package bio.anode.phneutralizer.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -93,19 +94,19 @@ public class SensorMonitorService {
             if (value instanceof Number numValue) {
                 double d = numValue.doubleValue();
                 if (d > highThreshold || d < lowThreshold) {
-                    onThresholdCrossed(value, sensorUsage.getMetricName(), sensorUsage.getUnit());
+                    onThresholdCrossed(value, sensorUsage.getMetricName(), sensorUsage.getUnit(),sensorUsage.getComponent().getId());
                     updateThresholds(d);
                 }
             } else {
                 if (!value.equals(lastValue)) {
-                    onThresholdCrossed(value, sensorUsage.getMetricName(), sensorUsage.getUnit());
+                    onThresholdCrossed(value, sensorUsage.getMetricName(), sensorUsage.getUnit(), sensorUsage.getComponent().getId());
                 }
             }
             lastValue = value;
         }
 
-        private void onThresholdCrossed(Object value, String metricName, String unit) {
-            eventPublisher.publishEvent(new MeasureEvent(LocalDateTime.now(), metricName, value, unit));
+        private void onThresholdCrossed(Object value, String metricName, String unit, UUID id) {
+            eventPublisher.publishEvent(new MeasureEvent(LocalDateTime.now(), metricName, value, unit, id));
         }
 
         private void updateThresholds(double value) {

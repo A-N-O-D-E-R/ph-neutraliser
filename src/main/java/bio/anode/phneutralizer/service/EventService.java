@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,7 +75,7 @@ public class EventService {
                 .startDate(filter.getStartDate())
                 .endDate(filter.getEndDate())
                 .logType(filter.getLogType())
-                .metricName("PH")
+                .metricName("ph") // TODO: should use the sensor usage metric name instead of hardcoding "ph"
                 .build();
         return filterMeasureEvents(readMeasureEvents(phFilter), phFilter);
     }
@@ -86,7 +87,7 @@ public class EventService {
                 .startDate(filter.getStartDate())
                 .endDate(filter.getEndDate())
                 .logType(filter.getLogType())
-                .metricName("TEMPERATURE")
+                .metricName("degree") // TODO: should use the sensor usage metric name instead of hardcoding "degree"
                 .build();
         return filterMeasureEvents(readMeasureEvents(tempFilter), tempFilter);
     }
@@ -116,20 +117,34 @@ public class EventService {
         }
 
         List<MeasureEvent> events = filterMeasureEvents(readMeasureEvents(filter), filter);
-        for (MeasureEvent event : events) {
-            csv.append(String.format("%s,%s,%.2f,%s\n",
-                    event.timestamp(),
-                    event.metricName(),
-                    event.value(),
-                    event.unit()));
+        for (MeasureEvent event : events) { 
+            csv.append(toCsvLine(event));
         }
-
         return csv.toString().getBytes(StandardCharsets.UTF_8);
     }
 
+
+
+    private String toCsvLine(MeasureEvent event) {
+        String timestamp = event.timestamp() != null ? event.timestamp().toString() : "";
+        String metric = event.metricName() != null ? event.metricName() : "";
+        String unit = event.unit() != null ? event.unit() : "";
+
+        String formattedValue = switch (event.value()) {
+            case Boolean b -> Boolean.toString(b);
+            case Number n -> String.format("%.2f", n.doubleValue());
+            case null -> "";
+            default -> event.value().toString();
+        };
+
+        return String.format("%s,%s,%s,%s%n", timestamp, metric, formattedValue, unit);
+    }
+
+
+
+
     @Async
     @EventListener
-    
     public void archiveEvent(MeasureEvent event) {
         log.debug("Archiving measure event: {}", event);
         log.info(EventMarkers.EVENT, "{}", event);
@@ -147,7 +162,8 @@ public class EventService {
                     parseDateTime(attrs.get("timestamp")),
                     attrs.get("metricName"),
                     parseDouble(attrs.get("value")),
-                    (attrs.get("unit"))),
+                    (attrs.get("unit")),
+                 UUID.fromString(attrs.get("sensorId"))),
                 filter.getStartDate(), filter.getEndDate());
         }
         // Default to JSON
