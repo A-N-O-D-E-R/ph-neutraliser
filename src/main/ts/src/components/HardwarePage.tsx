@@ -1,3 +1,4 @@
+import { useState, useRef } from "react"
 import {
   useHardwareStatus,
   useSynchronizeTime,
@@ -24,17 +25,17 @@ import {
   MemoryStick,
   Droplets,
   FlaskConical,
+  GripVertical,
 } from "lucide-react"
 
+
+// This come from the embedded firmware and should ideally be retrieved from the API, but for now we hardcode it here for display purposes
 const RELAY_LABELS = [
+  "WasteTank 1 Drain",
+  "WasteTank 2 Drain",
+  "Neutralizer Drain",
   "Acid Pump",
   "Agitation",
-  "Tank 1 Drain",
-  "Tank 2 Drain",
-  "Neutralizer Drain",
-  "Relay 6",
-  "Relay 7",
-  "Relay 8",
 ]
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -153,8 +154,10 @@ export function HardwarePage() {
   const hw = hardware?.data
   const isConnected = hw?.connected
   const relays = hw !== undefined ? relayBits(hw.relayStatus) : []
-  const activeRelayCount = relays.filter(Boolean).length
+  
   const usages = usagesResponse?.data ?? []
+  const sensors = usages.filter(usage => usage.category === "SENSOR");
+  const activeSensors = sensors.filter(usage => usage.installed).length
 
   return (
     <div className="space-y-8 p-6 md:p-8 lg:p-10">
@@ -209,9 +212,9 @@ export function HardwarePage() {
               <Activity className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Active Relays</p>
+              <p className="text-xs text-muted-foreground">Active Sensors</p>
               <p className="text-lg font-semibold">
-                {activeRelayCount} <span className="text-sm font-normal text-muted-foreground">/ 8</span>
+                {activeSensors} <span className="text-sm font-normal text-muted-foreground">/ {sensors.length} </span>
               </p>
             </div>
           </CardContent>
@@ -262,6 +265,27 @@ export function HardwarePage() {
         </CardContent>
       </Card>
 
+      {/* COMPONENT USAGES */}
+      {sensors.length > 0 && (
+        <Card className="rounded-2xl shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Cpu className="w-4 h-4" />
+              Sensors Usages
+              <Badge variant="secondary" className="ml-auto">{sensors.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {sensors.map((sensor) => (
+                <UsageCard key={sensor.id} usage={sensor} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+
       {/* RELAY STATUS */}
       <Card className="rounded-2xl shadow-sm">
         <CardHeader className="pb-2">
@@ -302,25 +326,6 @@ export function HardwarePage() {
         </CardContent>
       </Card>
 
-      {/* COMPONENT USAGES */}
-      {usages.length > 0 && (
-        <Card className="rounded-2xl shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Cpu className="w-4 h-4" />
-              Component Usages
-              <Badge variant="secondary" className="ml-auto">{usages.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {usages.map((usage) => (
-                <UsageCard key={usage.id} usage={usage} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }
