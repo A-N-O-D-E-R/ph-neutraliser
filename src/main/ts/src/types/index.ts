@@ -100,13 +100,16 @@ export interface UsageDto {
   installed?: boolean
   metricName?: string
   unit?: string
+  connectionType?: 'MODBUS' | 'SYSTEM'
   portName?: string
   slaveId?: number
   offset?: number
+  poolName?: string
 }
 
 export interface UsageConnectionRequest {
   portName?: string
   slaveId?: number
   offset?: number
+  poolName?: string
 }

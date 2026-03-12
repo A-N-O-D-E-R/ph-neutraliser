@@ -23,7 +23,9 @@ public class UsageDto {
     private Boolean installed;
     private String metricName;
     private String unit;
+    private String connectionType;
     private String portName;
     private Integer slaveId;
     private Integer offset;
+    private String poolName;
 }

@@ -106,22 +106,24 @@ function UsageCard({ usage, lastMeasure }: { usage: UsageDto; lastMeasure?: Meas
   const [portName, setPortName] = useState(usage.portName ?? "")
   const [slaveId, setSlaveId] = useState(String(usage.slaveId ?? ""))
   const [offset, setOffset] = useState(String(usage.offset ?? ""))
+  const [poolName, setPoolName] = useState(usage.poolName ?? "")
   const updateConnection = useUpdateUsageConnection()
   const { data: modbusConnections } = useModbusConnections()
   const connectionOptions = modbusConnections?.data ?? []
 
-  const hasConnectionParams = usage.portName !== undefined || usage.slaveId !== undefined || usage.offset !== undefined
+  const connectionType = usage.connectionType
+  const hasConnectionParams = connectionType !== undefined
 
   function handleSave() {
-    updateConnection.mutate(
-      {
-        id: usage.id,
-        req: {
+    const req = connectionType === "SYSTEM"
+      ? { poolName: poolName || undefined }
+      : {
           portName: portName || undefined,
           slaveId: slaveId !== "" ? Number(slaveId) : undefined,
           offset: offset !== "" ? Number(offset) : undefined,
-        },
-      },
+        }
+    updateConnection.mutate(
+      { id: usage.id, req },
       { onSuccess: () => setDialogOpen(false) }
     )
   }
@@ -185,46 +187,68 @@ function UsageCard({ usage, lastMeasure }: { usage: UsageDto; lastMeasure?: Meas
           </DialogHeader>
           {hasConnectionParams ? (
             <div className="space-y-4 py-2">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <Radio className="w-3.5 h-3.5" /> Port
-                </label>
-                <Select value={portName} onValueChange={setPortName}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a connection" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {connectionOptions.map((name) => (
-                      <SelectItem key={name} value={name}>{name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground">Connection type</span>
+                <Badge variant="outline" className="text-xs">
+                  {connectionType === "MODBUS" ? <Radio className="w-3 h-3 mr-1" /> : <Cpu className="w-3 h-3 mr-1" />}
+                  {connectionType}
+                </Badge>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <Hash className="w-3.5 h-3.5" /> Slave ID
-                </label>
-                <Input
-                  type="number"
-                  value={slaveId}
-                  onChange={(e) => setSlaveId(e.target.value)}
-                  placeholder="1"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <Gauge className="w-3.5 h-3.5" /> Offset
-                </label>
-                <Input
-                  type="number"
-                  value={offset}
-                  onChange={(e) => setOffset(e.target.value)}
-                  placeholder="0"
-                />
-              </div>
+              {connectionType === "SYSTEM" ? (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <Hash className="w-3.5 h-3.5" /> Pool Name
+                  </label>
+                  <Input
+                    value={poolName}
+                    onChange={(e) => setPoolName(e.target.value)}
+                    placeholder="pool-name"
+                  />
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                      <Radio className="w-3.5 h-3.5" /> Port
+                    </label>
+                    <Select value={portName} onValueChange={setPortName}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a connection" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {connectionOptions.map((name) => (
+                          <SelectItem key={name} value={name}>{name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                      <Hash className="w-3.5 h-3.5" /> Slave ID
+                    </label>
+                    <Input
+                      type="number"
+                      value={slaveId}
+                      onChange={(e) => setSlaveId(e.target.value)}
+                      placeholder="1"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                      <Gauge className="w-3.5 h-3.5" /> Offset
+                    </label>
+                    <Input
+                      type="number"
+                      value={offset}
+                      onChange={(e) => setOffset(e.target.value)}
+                      placeholder="0"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground py-2">No Modbus connection parameters available for this sensor.</p>
+            <p className="text-sm text-muted-foreground py-2">No connection parameters available for this sensor.</p>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>

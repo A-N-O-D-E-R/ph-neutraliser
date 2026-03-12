@@ -7,4 +7,5 @@ public class UsageConnectionRequest {
     private String portName;
     private Integer slaveId;
     private Integer offset;
+    private String poolName;
 }
