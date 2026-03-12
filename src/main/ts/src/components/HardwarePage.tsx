@@ -1,6 +1,6 @@
-import { useState, useRef } from "react"
 import {
   useHardwareStatus,
+  useMeasureEvents,
   useSynchronizeTime,
   useUsages,
 } from "../hooks/useNeutralizer"
@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { Skeleton } from "./ui/skeleton"
-import type { UsageDto } from "../types"
+import type { MeasureEvent, UsageDto } from "../types"
 import {
   Cpu,
   RefreshCw,
@@ -25,7 +25,6 @@ import {
   MemoryStick,
   Droplets,
   FlaskConical,
-  GripVertical,
 } from "lucide-react"
 
 
@@ -82,7 +81,7 @@ function InfoRow({ label, value, icon }: { label: string; value?: string | numbe
   )
 }
 
-function UsageCard({ usage }: { usage: UsageDto }) {
+function UsageCard({ usage, lastMeasure }: { usage: UsageDto; lastMeasure?: MeasureEvent }) {
   const icon = usage.usageType ? USAGE_TYPE_ICONS[usage.usageType] : <Cpu className="w-4 h-4" />
   const colorClass = CATEGORY_COLORS[usage.category] ?? "bg-muted text-muted-foreground"
 
@@ -105,6 +104,14 @@ function UsageCard({ usage }: { usage: UsageDto }) {
           </p>
         )}
       </div>
+      {lastMeasure && (
+        <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-1.5 text-xs">
+          <span className="text-muted-foreground">Last measure</span>
+          <span className="font-semibold tabular-nums text-foreground">
+            {lastMeasure.value} <span className="font-normal text-muted-foreground">{lastMeasure.unit}</span>
+          </span>
+        </div>
+      )}
       <div className="flex items-center gap-3 text-xs">
         <span className={`flex items-center gap-1 ${usage.accessible ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}`}>
           {usage.accessible
@@ -128,6 +135,7 @@ function UsageCard({ usage }: { usage: UsageDto }) {
 export function HardwarePage() {
   const { data: hardware, isLoading, error, refetch, isFetching } = useHardwareStatus()
   const { data: usagesResponse } = useUsages()
+  const { data: measureEvents } = useMeasureEvents()
   const syncTime = useSynchronizeTime()
 
   if (isLoading) return <HardwareSkeleton />
@@ -158,6 +166,14 @@ export function HardwarePage() {
   const usages = usagesResponse?.data ?? []
   const sensors = usages.filter(usage => usage.category === "SENSOR");
   const activeSensors = sensors.filter(usage => usage.installed).length
+
+  const lastMeasureByMetric = (measureEvents ?? []).reduce<Record<string, MeasureEvent>>((acc, event) => {
+    const existing = acc[event.metricName]
+    if (!existing || event.timestamp > existing.timestamp) {
+      acc[event.metricName] = event
+    }
+    return acc
+  }, {})
 
   return (
     <div className="space-y-8 p-6 md:p-8 lg:p-10">
@@ -233,38 +249,6 @@ export function HardwarePage() {
         </Card>
       </div>
 
-      {/* HARDWARE DETAILS */}
-      <Card className="rounded-2xl shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-            <Cpu className="w-4 h-4" />
-            Connection Details
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="px-6 pb-6">
-          <InfoRow label="Port" value={hw?.portName} icon={<Radio className="w-4 h-4" />} />
-          <InfoRow label="Baudrate" value={hw?.baudrate?.toLocaleString()} icon={<Gauge className="w-4 h-4" />} />
-          <InfoRow label="Slave ID" value={hw?.slaveId} icon={<Hash className="w-4 h-4" />} />
-          <InfoRow label="Device Time" value={hw?.deviceTime} icon={<Clock className="w-4 h-4" />} />
-          <InfoRow
-            label="Relay Status (raw)"
-            value={hw !== undefined ? `0x${hw.relayStatus.toString(16).toUpperCase().padStart(2, "0")} (${hw.relayStatus})` : undefined}
-            icon={<Activity className="w-4 h-4" />}
-          />
-          <div className="pt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => syncTime.mutate()}
-              disabled={syncTime.isPending || !isConnected}
-            >
-              <RefreshCw className={`w-4 h-4 mr-1.5 ${syncTime.isPending ? "animate-spin" : ""}`} />
-              Sync Device Time
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* COMPONENT USAGES */}
       {sensors.length > 0 && (
         <Card className="rounded-2xl shadow-sm">
@@ -278,7 +262,11 @@ export function HardwarePage() {
           <CardContent className="px-6 pb-6">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {sensors.map((sensor) => (
-                <UsageCard key={sensor.id} usage={sensor} />
+                <UsageCard
+                  key={sensor.id}
+                  usage={sensor}
+                  lastMeasure={sensor.metricName ? lastMeasureByMetric[sensor.metricName] : undefined}
+                />
               ))}
             </div>
           </CardContent>
@@ -325,6 +313,39 @@ export function HardwarePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* HARDWARE DETAILS */}
+      <Card className="rounded-2xl shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <Cpu className="w-4 h-4" />
+            Connection Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-6 pb-6">
+          <InfoRow label="Port" value={hw?.portName} icon={<Radio className="w-4 h-4" />} />
+          <InfoRow label="Baudrate" value={hw?.baudrate?.toLocaleString()} icon={<Gauge className="w-4 h-4" />} />
+          <InfoRow label="Slave ID" value={hw?.slaveId} icon={<Hash className="w-4 h-4" />} />
+          <InfoRow label="Device Time" value={hw?.deviceTime} icon={<Clock className="w-4 h-4" />} />
+          <InfoRow
+            label="Relay Status (raw)"
+            value={hw !== undefined ? `0x${hw.relayStatus.toString(16).toUpperCase().padStart(2, "0")} (${hw.relayStatus})` : undefined}
+            icon={<Activity className="w-4 h-4" />}
+          />
+          <div className="pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => syncTime.mutate()}
+              disabled={syncTime.isPending || !isConnected}
+            >
+              <RefreshCw className={`w-4 h-4 mr-1.5 ${syncTime.isPending ? "animate-spin" : ""}`} />
+              Sync Device Time
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
 
     </div>
   )
