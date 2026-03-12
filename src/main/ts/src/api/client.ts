@@ -10,6 +10,7 @@ import type {
   ApiResponse,
   ComponentDto,
   UsageDto,
+  UsageConnectionRequest,
 } from '../types'
 
 
@@ -92,4 +93,9 @@ export const neutralizerApi = {
   getComponents: () => api.get('control/components').json<ApiResponse<ComponentDto[]>>(),
 
   getUsages: () => api.get('control/usages').json<ApiResponse<UsageDto[]>>(),
+
+  getModbusConnections: () => api.get('control/modbus-connections').json<ApiResponse<string[]>>(),
+
+  updateUsageConnection: (id: string, req: UsageConnectionRequest) =>
+    api.put(`control/usages/${id}/connection`, { json: req }).json<void>(),
 }

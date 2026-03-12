@@ -23,4 +23,7 @@ public class UsageDto {
     private Boolean installed;
     private String metricName;
     private String unit;
+    private String portName;
+    private Integer slaveId;
+    private Integer offset;
 }

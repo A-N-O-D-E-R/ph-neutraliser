@@ -1,16 +1,24 @@
 package bio.anode.phneutralizer.service;
 
 import bio.anode.phneutralizer.dto.ComponentDto;
+import bio.anode.phneutralizer.dto.UsageConnectionRequest;
 import bio.anode.phneutralizer.dto.UsageDto;
 import bio.anode.phneutralizer.model.component.Component;
+import bio.anode.phneutralizer.model.component.NetworkingComponent;
+import bio.anode.phneutralizer.model.connection.ModbusConnectionParameters;
 import bio.anode.phneutralizer.model.usage.*;
 import bio.anode.phneutralizer.repository.*;
 import jakarta.persistence.DiscriminatorValue;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.anode.modbus.ModbusProperties;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +29,10 @@ public class HardwareInfoService {
     private final PhNeutraliserRepository phNeutraliserRepository;
     private final ClockRTCRepository clockRTCRepository;
     private final EmbededComputeRepository embededComputeRepository;
+    private final ConnectionParametersRepository connectionParametersRepository;
+
+    @Autowired(required = false)
+    private ModbusProperties modbusProperties;
 
     public List<ComponentDto> getComponents() {
         return componentRepository.findAll().stream()
@@ -57,6 +69,7 @@ public class HardwareInfoService {
     }
 
     private UsageDto toSensorUsageDto(SensorUsage<?> su) {
+        ModbusConnectionParameters modbusParams = resolveModbusParams(su);
         return UsageDto.builder()
                 .id(su.getId())
                 .name(sensorDisplayName(su))
@@ -70,7 +83,32 @@ public class HardwareInfoService {
                 .installed(su.isInstalled())
                 .metricName(su.getMetricName())
                 .unit(su.getUnit())
+                .portName(modbusParams != null ? modbusParams.getName() : null)
+                .slaveId(modbusParams != null ? modbusParams.getSlaveId() : null)
+                .offset(modbusParams != null ? modbusParams.getOffset() : null)
                 .build();
+    }
+
+    @Transactional
+    public void updateSensorConnection(UUID id, UsageConnectionRequest request) {
+        SensorUsage<?> su = hardwareRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usage not found: " + id));
+        ModbusConnectionParameters params = resolveModbusParams(su);
+        if (params == null) {
+            throw new IllegalStateException("Sensor has no Modbus connection parameters");
+        }
+        if (request.getPortName() != null) params.setName(request.getPortName());
+        if (request.getSlaveId() != null) params.setSlaveId(request.getSlaveId());
+        if (request.getOffset() != null) params.setOffset(request.getOffset());
+        connectionParametersRepository.save(params);
+    }
+
+    private ModbusConnectionParameters resolveModbusParams(SensorUsage<?> su) {
+        if (su.getComponent() instanceof NetworkingComponent nc
+                && nc.getConnectionParameters() instanceof ModbusConnectionParameters mp) {
+            return mp;
+        }
+        return null;
     }
 
     private UsageDto toActuatorUsageDto(PhNeutraliserUsage u) {
@@ -116,5 +154,12 @@ public class HardwareInfoService {
     private String getDiscriminatorValue(Class<?> clazz) {
         DiscriminatorValue dv = clazz.getAnnotation(DiscriminatorValue.class);
         return dv != null ? dv.value() : clazz.getSimpleName();
+    }
+
+    public List<String> getModbusConnectionNames() {
+        if (modbusProperties == null) return List.of();
+        return modbusProperties.getConnections().stream()
+                .map(ModbusProperties.Connection::getName)
+                .toList();
     }
 }

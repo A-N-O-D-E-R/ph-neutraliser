@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { neutralizerApi } from '../api/client'
-import type { NeutralizerConfiguration, CalibrationRequest, ManualControlRequest } from '../types'
+import type { NeutralizerConfiguration, CalibrationRequest, ManualControlRequest, UsageConnectionRequest } from '../types'
 
 export function useStatus() {
   return useQuery({
@@ -145,5 +145,21 @@ export function useUsages() {
   return useQuery({
     queryKey: ['usages'],
     queryFn: neutralizerApi.getUsages,
+  })
+}
+
+export function useModbusConnections() {
+  return useQuery({
+    queryKey: ['modbusConnections'],
+    queryFn: neutralizerApi.getModbusConnections,
+  })
+}
+
+export function useUpdateUsageConnection() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, req }: { id: string; req: UsageConnectionRequest }) =>
+      neutralizerApi.updateUsageConnection(id, req),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['usages'] }),
   })
 }

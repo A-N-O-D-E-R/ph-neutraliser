@@ -100,4 +100,13 @@ export interface UsageDto {
   installed?: boolean
   metricName?: string
   unit?: string
+  portName?: string
+  slaveId?: number
+  offset?: number
+}
+
+export interface UsageConnectionRequest {
+  portName?: string
+  slaveId?: number
+  offset?: number
 }

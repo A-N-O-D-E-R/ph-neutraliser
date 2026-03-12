@@ -13,6 +13,7 @@ import bio.anode.phneutralizer.service.HardwareInfoService;
 import bio.anode.phneutralizer.service.NeutralizerService;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/control")
@@ -165,5 +166,23 @@ public class NeutralizerController {
     public ResponseEntity<ApiResponse<List<UsageDto>>> getUsages() {
         log.debug("GET /control/usages");
         return ResponseEntity.ok(ApiResponse.success(hardwareInfoService.getUsages()));
+    }
+
+    @GetMapping("/modbus-connections")
+    @Operation(summary = "Get Modbus connection names", description = "Returns the list of configured Modbus connection names")
+    public ResponseEntity<ApiResponse<List<String>>> getModbusConnections() {
+        log.debug("GET /control/modbus-connections");
+        List<String> names = hardwareInfoService.getModbusConnectionNames();
+        return ResponseEntity.ok(ApiResponse.success(names));
+    }
+
+    @PutMapping("/usages/{id}/connection")
+    @Operation(summary = "Update sensor connection parameters", description = "Updates the Modbus connection parameters for a sensor usage")
+    public ResponseEntity<ApiResponse<Void>> updateSensorConnection(
+            @PathVariable UUID id,
+            @RequestBody UsageConnectionRequest request) {
+        log.info("PUT /control/usages/{}/connection", id);
+        hardwareInfoService.updateSensorConnection(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Connection parameters updated"));
     }
 }
