@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { neutralizerApi } from '../api/client'
-import type { NeutralizerConfiguration, CalibrationRequest, ManualControlRequest, UsageConnectionRequest } from '../types'
+import type { NeutralizerConfiguration, CalibrationRequest, ManualControlRequest, UsageConnectionRequest, CreateSensorRequest } from '../types'
 
 export function useStatus() {
   return useQuery({
@@ -161,5 +161,27 @@ export function useUpdateUsageConnection() {
     mutationFn: ({ id, req }: { id: string; req: UsageConnectionRequest }) =>
       neutralizerApi.updateUsageConnection(id, req),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['usages'] }),
+  })
+}
+
+export function useCreateSensor() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (req: CreateSensorRequest) => neutralizerApi.createSensor(req),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['usages'] }),
+  })
+}
+
+export function useDeleteSensor() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => neutralizerApi.deleteSensor(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['usages'] }),
+  })
+}
+
+export function useRestartSensorMonitor() {
+  return useMutation({
+    mutationFn: neutralizerApi.restartSensorMonitor,
   })
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import bio.anode.phneutralizer.dto.*;
 import bio.anode.phneutralizer.service.HardwareInfoService;
 import bio.anode.phneutralizer.service.NeutralizerService;
+import bio.anode.phneutralizer.service.SensorMonitorService;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,10 +25,12 @@ public class NeutralizerController {
 
     private final NeutralizerService neutralizerService;
     private final HardwareInfoService hardwareInfoService;
+    private final SensorMonitorService sensorMonitorService;
 
-    public NeutralizerController(NeutralizerService neutralizerService, HardwareInfoService hardwareInfoService) {
+    public NeutralizerController(NeutralizerService neutralizerService, HardwareInfoService hardwareInfoService, SensorMonitorService sensorMonitorService) {
         this.neutralizerService = neutralizerService;
         this.hardwareInfoService = hardwareInfoService;
+        this.sensorMonitorService = sensorMonitorService;
     }
 
     @GetMapping("/status")
@@ -184,5 +187,22 @@ public class NeutralizerController {
         log.info("PUT /control/usages/{}/connection", id);
         hardwareInfoService.updateSensorConnection(id, request);
         return ResponseEntity.ok(ApiResponse.success("Connection parameters updated"));
+    }
+
+    @PostMapping("/restart-sensor-monitor")
+    @Operation(summary = "Restart sensor monitor service", description = "Cancels all running sensor monitors and restarts them from the database")
+    public ResponseEntity<ApiResponse<Void>> restartSensorMonitor() throws Exception {
+        log.info("POST /control/restart-sensor-monitor");
+        sensorMonitorService.restart();
+        return ResponseEntity.ok(ApiResponse.success("Sensor monitor service restarted"));
+    }
+
+    @PostMapping("/usages/sensor")
+    @Operation(summary = "Create a new sensor", description = "Declares a new sensor with its component and connection parameters")
+    public ResponseEntity<ApiResponse<UsageDto>> createSensor(
+            @RequestBody bio.anode.phneutralizer.dto.CreateSensorRequest request) {
+        log.info("POST /control/usages/sensor type={}", request.getUsageType());
+        UsageDto created = hardwareInfoService.createSensor(request);
+        return ResponseEntity.ok(ApiResponse.success(created));
     }
 }

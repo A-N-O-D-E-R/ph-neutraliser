@@ -11,6 +11,7 @@ import type {
   ComponentDto,
   UsageDto,
   UsageConnectionRequest,
+  CreateSensorRequest,
 } from '../types'
 
 
@@ -98,4 +99,13 @@ export const neutralizerApi = {
 
   updateUsageConnection: (id: string, req: UsageConnectionRequest) =>
     api.put(`control/usages/${id}/connection`, { json: req }).json<void>(),
+
+  createSensor: (req: CreateSensorRequest) =>
+    api.post('control/usages/sensor', { json: req }).json<ApiResponse<UsageDto>>(),
+
+  deleteSensor: (id: string) =>
+    api.delete(`control/usages/${id}`).json<void>(),
+
+  restartSensorMonitor: () =>
+    api.post('control/restart-sensor-monitor').json<void>(),
 }

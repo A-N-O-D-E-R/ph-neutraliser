@@ -113,3 +113,15 @@ export interface UsageConnectionRequest {
   offset?: number
   poolName?: string
 }
+
+export interface CreateSensorRequest {
+  usageType: string
+  modelName: string
+  serialNumber: string
+  metricName?: string
+  connectionType: 'MODBUS' | 'SYSTEM'
+  portName?: string
+  slaveId?: number
+  offset?: number
+  poolName?: string
+}
