@@ -8,6 +8,10 @@ import type {
   MeasureEvent,
   NeutralizerEvent,
   ApiResponse,
+  ComponentDto,
+  UsageDto,
+  UsageConnectionRequest,
+  CreateSensorRequest,
 } from '../types'
 
 
@@ -86,4 +90,22 @@ export const neutralizerApi = {
     const res = await api.get(`events/status${query ? `?${query}` : ''}`).json<ApiResponse<{ events: NeutralizerEvent[] }>>()
     return res.data?.events ?? []
   },
+
+  getComponents: () => api.get('control/components').json<ApiResponse<ComponentDto[]>>(),
+
+  getUsages: () => api.get('control/usages').json<ApiResponse<UsageDto[]>>(),
+
+  getModbusConnections: () => api.get('control/modbus-connections').json<ApiResponse<string[]>>(),
+
+  updateUsageConnection: (id: string, req: UsageConnectionRequest) =>
+    api.put(`control/usages/${id}/connection`, { json: req }).json<void>(),
+
+  createSensor: (req: CreateSensorRequest) =>
+    api.post('control/usages/sensor', { json: req }).json<ApiResponse<UsageDto>>(),
+
+  deleteSensor: (id: string) =>
+    api.delete(`control/usages/${id}`).json<void>(),
+
+  restartSensorMonitor: () =>
+    api.post('control/restart-sensor-monitor').json<void>(),
 }

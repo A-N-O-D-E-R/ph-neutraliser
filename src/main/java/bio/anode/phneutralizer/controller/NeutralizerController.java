@@ -9,7 +9,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import bio.anode.phneutralizer.dto.*;
+import bio.anode.phneutralizer.service.HardwareInfoService;
 import bio.anode.phneutralizer.service.NeutralizerService;
+import bio.anode.phneutralizer.service.SensorMonitorService;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/control")
@@ -19,9 +24,13 @@ public class NeutralizerController {
     private static final Logger log = LoggerFactory.getLogger(NeutralizerController.class);
 
     private final NeutralizerService neutralizerService;
+    private final HardwareInfoService hardwareInfoService;
+    private final SensorMonitorService sensorMonitorService;
 
-    public NeutralizerController(NeutralizerService neutralizerService) {
+    public NeutralizerController(NeutralizerService neutralizerService, HardwareInfoService hardwareInfoService, SensorMonitorService sensorMonitorService) {
         this.neutralizerService = neutralizerService;
+        this.hardwareInfoService = hardwareInfoService;
+        this.sensorMonitorService = sensorMonitorService;
     }
 
     @GetMapping("/status")
@@ -146,5 +155,54 @@ public class NeutralizerController {
         log.info("POST /control/sync-time");
         neutralizerService.synchronizeTime();
         return ResponseEntity.ok(ApiResponse.success("Device time synchronized"));
+    }
+
+    @GetMapping("/components")
+    @Operation(summary = "Get component list", description = "Returns the list of all hardware components registered in the system")
+    public ResponseEntity<ApiResponse<List<ComponentDto>>> getComponents() {
+        log.debug("GET /control/components");
+        return ResponseEntity.ok(ApiResponse.success(hardwareInfoService.getComponents()));
+    }
+
+    @GetMapping("/usages")
+    @Operation(summary = "Get usage list", description = "Returns the list of all component usages (sensors, actuators, compute, clock)")
+    public ResponseEntity<ApiResponse<List<UsageDto>>> getUsages() {
+        log.debug("GET /control/usages");
+        return ResponseEntity.ok(ApiResponse.success(hardwareInfoService.getUsages()));
+    }
+
+    @GetMapping("/modbus-connections")
+    @Operation(summary = "Get Modbus connection names", description = "Returns the list of configured Modbus connection names")
+    public ResponseEntity<ApiResponse<List<String>>> getModbusConnections() {
+        log.debug("GET /control/modbus-connections");
+        List<String> names = hardwareInfoService.getModbusConnectionNames();
+        return ResponseEntity.ok(ApiResponse.success(names));
+    }
+
+    @PutMapping("/usages/{id}/connection")
+    @Operation(summary = "Update sensor connection parameters", description = "Updates the Modbus connection parameters for a sensor usage")
+    public ResponseEntity<ApiResponse<Void>> updateSensorConnection(
+            @PathVariable UUID id,
+            @RequestBody UsageConnectionRequest request) {
+        log.info("PUT /control/usages/{}/connection", id);
+        hardwareInfoService.updateSensorConnection(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Connection parameters updated"));
+    }
+
+    @PostMapping("/restart-sensor-monitor")
+    @Operation(summary = "Restart sensor monitor service", description = "Cancels all running sensor monitors and restarts them from the database")
+    public ResponseEntity<ApiResponse<Void>> restartSensorMonitor() throws Exception {
+        log.info("POST /control/restart-sensor-monitor");
+        sensorMonitorService.restart();
+        return ResponseEntity.ok(ApiResponse.success("Sensor monitor service restarted"));
+    }
+
+    @PostMapping("/usages/sensor")
+    @Operation(summary = "Create a new sensor", description = "Declares a new sensor with its component and connection parameters")
+    public ResponseEntity<ApiResponse<UsageDto>> createSensor(
+            @RequestBody bio.anode.phneutralizer.dto.CreateSensorRequest request) {
+        log.info("POST /control/usages/sensor type={}", request.getUsageType());
+        UsageDto created = hardwareInfoService.createSensor(request);
+        return ResponseEntity.ok(ApiResponse.success(created));
     }
 }

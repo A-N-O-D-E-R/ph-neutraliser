@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SensorMonitorService {
 
     private final Map<SensorUsage<?>, SensorMonitor> monitors = new ConcurrentHashMap<>();
+    private final Map<SensorUsage<?>, ScheduledFuture<?>> scheduledFutures = new ConcurrentHashMap<>();
     private final TaskScheduler taskScheduler;
     private final ApplicationEventPublisher eventPublisher;
     private final HardwareRepository hardwareRepository;
@@ -53,10 +55,11 @@ public class SensorMonitorService {
             monitors.put(usage, monitor);
             log.info("Scheduled monitor for sensor {} with update frequency {} ms", usage.getName(), usage.getUpdateFrequency());
             // Schedule each monitor with its own frequency
-            taskScheduler.scheduleWithFixedDelay(
+            ScheduledFuture<?> future = taskScheduler.scheduleWithFixedDelay(
                     monitor::check,
                     usage.getUpdateFrequency()
             );
+            scheduledFutures.put(usage, future);
         }
     }
 
@@ -73,6 +76,14 @@ public class SensorMonitorService {
 		}
 	}
 
+
+    public void restart() throws ConnectorInstanciationException {
+        log.info("Restarting SensorMonitorService: cancelling {} scheduled monitors", scheduledFutures.size());
+        scheduledFutures.values().forEach(f -> f.cancel(false));
+        scheduledFutures.clear();
+        monitors.clear();
+        init();
+    }
 
     public class SensorMonitor {
 

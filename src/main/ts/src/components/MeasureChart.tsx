@@ -126,7 +126,7 @@ function formatDateTime(ts: number): string {
   })
 }
 
-export function PhChart() {
+export function MeasureChart() {
   const [rangeIndex, setRangeIndex] = useState(1) // default 6h
   const [hoveredEvent, setHoveredEvent] = useState<number | null>(null)
 

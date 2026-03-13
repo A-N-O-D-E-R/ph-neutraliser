@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { neutralizerApi } from '../api/client'
-import type { NeutralizerConfiguration, CalibrationRequest, ManualControlRequest } from '../types'
+import type { NeutralizerConfiguration, CalibrationRequest, ManualControlRequest, UsageConnectionRequest, CreateSensorRequest } from '../types'
 
 export function useStatus() {
   return useQuery({
@@ -131,5 +131,57 @@ export function useStatusEvents(startDate?: string, endDate?: string) {
   return useQuery({
     queryKey: ['statusEvents', startDate, endDate],
     queryFn: () => neutralizerApi.getStatusEvents(startDate, endDate),
+  })
+}
+
+export function useComponents() {
+  return useQuery({
+    queryKey: ['components'],
+    queryFn: neutralizerApi.getComponents,
+  })
+}
+
+export function useUsages() {
+  return useQuery({
+    queryKey: ['usages'],
+    queryFn: neutralizerApi.getUsages,
+  })
+}
+
+export function useModbusConnections() {
+  return useQuery({
+    queryKey: ['modbusConnections'],
+    queryFn: neutralizerApi.getModbusConnections,
+  })
+}
+
+export function useUpdateUsageConnection() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, req }: { id: string; req: UsageConnectionRequest }) =>
+      neutralizerApi.updateUsageConnection(id, req),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['usages'] }),
+  })
+}
+
+export function useCreateSensor() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (req: CreateSensorRequest) => neutralizerApi.createSensor(req),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['usages'] }),
+  })
+}
+
+export function useDeleteSensor() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => neutralizerApi.deleteSensor(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['usages'] }),
+  })
+}
+
+export function useRestartSensorMonitor() {
+  return useMutation({
+    mutationFn: neutralizerApi.restartSensorMonitor,
   })
 }
