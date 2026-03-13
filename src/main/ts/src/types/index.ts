@@ -125,3 +125,5 @@ export interface CreateSensorRequest {
   offset?: number
   poolName?: string
 }
+
+export type ActionWithDuration = (params: { duration: number }) => void
