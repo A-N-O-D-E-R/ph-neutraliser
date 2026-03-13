@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   Cpu,
   Settings,
+  Users,
 } from "lucide-react"
 
 import { useNavigation, type Page } from "../hooks/use-navigation"
@@ -25,12 +26,22 @@ const navItems: { label: string; page: Page; icon: React.ReactNode }[] = [
   { label: "Hardware", page: "hardware", icon: <Cpu /> },
 ]
 
-const systemItems: { label: string; page: Page; icon: React.ReactNode }[] = [
-  { label: "Settings", page: "settings", icon: <Settings /> },
-]
+function useAuthMethod(): "credentials" | "oauth2" {
+  try {
+    const raw = localStorage.getItem("app-settings")
+    if (raw) return JSON.parse(raw)?.authMethod ?? "credentials"
+  } catch {}
+  return "credentials"
+}
 
 export function AppSidebar() {
   const { page, setPage } = useNavigation()
+  const authMethod = useAuthMethod()
+
+  const systemItems: { label: string; page: Page; icon: React.ReactNode }[] = [
+    ...(authMethod === "credentials" ? [{ label: "Users", page: "userManagement" as Page, icon: <Users /> }] : []),
+    { label: "Settings", page: "settings", icon: <Settings /> },
+  ]
 
   return (
     <Sidebar variant="inset">

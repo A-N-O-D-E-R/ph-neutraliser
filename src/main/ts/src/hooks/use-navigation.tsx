@@ -1,6 +1,6 @@
 import * as React from "react"
 
-export type Page = "dashboard" | "hardware" | "settings"
+export type Page = "dashboard" | "hardware" | "settings" | "userManagement"
 
 type NavigationContextProps = {
   page: Page
