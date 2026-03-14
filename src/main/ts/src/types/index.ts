@@ -127,3 +127,47 @@ export interface CreateSensorRequest {
 }
 
 export type ActionWithDuration = (params: { duration: number }) => void
+
+
+export interface Settings {
+  systemName: string
+  location: string
+  networkMode: "dhcp" | "static"
+  ipAddress: string
+  subnetMask: string
+  gateway: string
+  dns1: string
+  dns2: string
+  hostname: string
+  timezone: string
+  ntpServer: string
+  authMethod: "oauth2" | "credentials"
+  oauth2Url: string
+  oauth2ClientId: string
+  oauth2ClientSecret: string
+  credUsername: string
+  credPassword: string
+  teamsEnabled: boolean
+  teamsWebhook: string
+  slackEnabled: boolean
+  slackWebhook: string
+  telegramEnabled: boolean
+  telegramBotToken: string
+  telegramChatId: string
+  zabbixUrl: string
+  zabbixApiToken: string
+  zabbixHost: string
+}
+
+export type LogType = "measures" | "ph" | "status"
+export type ExportFormat = "csv" | "json"
+
+export type UserRole = "admin" | "operator"
+
+export interface AppUser {
+  id: string
+  username: string
+  passwordHash: string  
+  role: UserRole
+  createdAt: string
+}

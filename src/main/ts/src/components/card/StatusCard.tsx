@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
-import type { StatusCardLevel } from "../types"
-import { Card, CardContent } from "./ui/card"
-import { cn } from "../lib/utils"
+import type { StatusCardLevel } from "../../types"
+import { Card, CardContent } from "../ui/card"
+import { cn } from "../../lib/utils"
 
 interface Props {
   label: string
