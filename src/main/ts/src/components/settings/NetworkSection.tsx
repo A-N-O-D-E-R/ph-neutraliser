@@ -1,4 +1,4 @@
-import { Settings } from "@/types"
+import { Settings } from "../../types"
 import { Card, CardContent } from "../ui/card"
 import { Field, SectionHeader, ToggleGroup } from "./Section"
 import { Network } from "lucide-react"

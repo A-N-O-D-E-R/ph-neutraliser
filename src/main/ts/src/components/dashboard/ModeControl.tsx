@@ -3,7 +3,7 @@ import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator"
 
-import { NeutralizerStatus } from "@/types";
+import { NeutralizerStatus } from "../../types";
 export default function ModeControl({ status, onStartAuto, onStopAuto, onTriggerNeutralization, isStartPending, isStopPending, isNeutralizationPending }: { status: NeutralizerStatus | undefined, onStartAuto: () => void, onStopAuto: () => void, onTriggerNeutralization: () => void, isStartPending: boolean, isStopPending: boolean, isNeutralizationPending: boolean}) {
     const isAutomatic = status?.runningMode === "AUTOMATIC"
     return (

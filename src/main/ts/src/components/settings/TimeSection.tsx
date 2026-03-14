@@ -1,9 +1,9 @@
-import { Settings } from "@/types"
+import { Settings } from "../../types"
 import { Field, SectionHeader } from "./Section"
 import { Card, CardContent } from "../ui/card"
 import { Clock } from "lucide-react"
 import { Input } from "../ui/input"
-import { TIMEZONES } from "@/utils/consts"
+import { TIMEZONES } from "../../utils/consts"
 
 export default function TimeSection({
   settings,

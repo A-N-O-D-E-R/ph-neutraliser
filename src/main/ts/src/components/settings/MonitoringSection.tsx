@@ -1,4 +1,4 @@
-import { Settings } from "@/types"
+import { Settings } from "../../types"
 import { Card, CardContent } from "../ui/card"
 import { Activity } from "lucide-react"
 import { Field, PasswordInput, SectionHeader } from "./Section"

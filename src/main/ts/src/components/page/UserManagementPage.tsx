@@ -1,6 +1,6 @@
 import * as React from "react"
 import { UserForm } from "../userManagement/UserForm"
-import { AppUser, UserRole } from "@/types"
+import { AppUser, UserRole } from "../../types"
 import { UsersCard } from "../userManagement/UserCard"
 import { UserManagementHeader } from "../userManagement/UserManagementHeader"
 

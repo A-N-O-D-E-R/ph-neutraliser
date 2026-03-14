@@ -1,4 +1,4 @@
-import { AppUser } from "@/types"
+import { AppUser } from "../../types"
 import { UserForm } from "./UserForm"
 import { RoleBadge } from "../settings/Section"
 import { Check, Pencil, Trash2, X } from "lucide-react"

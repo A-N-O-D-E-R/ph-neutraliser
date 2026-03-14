@@ -1,8 +1,8 @@
-import { AppUser, UserRole } from "@/types";
+import { AppUser, UserRole } from "../../types";
 import React from "react";
 import { PasswordInput } from "../settings/Section";
 import { Input } from "../ui/input";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 import { Check, ShieldCheck, User, X } from "lucide-react";
 import { Button } from "../ui/button";
 

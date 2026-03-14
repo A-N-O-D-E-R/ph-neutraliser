@@ -1,4 +1,4 @@
-import { Settings } from "@/types"
+import { Settings } from "../../types"
 import { Building2 } from "lucide-react"
 import { Card, CardContent } from "../ui/card"
 import { Field, SectionHeader } from "./Section"

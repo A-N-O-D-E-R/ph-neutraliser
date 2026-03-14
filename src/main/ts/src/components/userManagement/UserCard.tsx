@@ -1,4 +1,4 @@
-import { AppUser } from "@/types"
+import { AppUser } from "../../types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Users } from "lucide-react"
 import UserItem from "./UserItem"
