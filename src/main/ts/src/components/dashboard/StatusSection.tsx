@@ -1,5 +1,5 @@
 import { Gauge, Play, Settings2, Wifi, WifiOff } from "lucide-react";
-import { StatusCard } from "../StatusCard";
+import { StatusCard } from "../card/StatusCard";
 import { HardwareStatus, NeutralizerStatus } from "@/types";
 
 

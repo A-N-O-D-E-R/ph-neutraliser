@@ -9,21 +9,21 @@ import {
   useActivateAcidPump,
   useActivateAgitation,
   useHardwareStatus
-} from "../hooks/useNeutralizer"
-import { Skeleton } from "./ui/skeleton"
+} from "../../hooks/useNeutralizer"
+import { Skeleton } from "../ui/skeleton"
 import {
   Activity,
   Beaker,
   Power,
   Settings2,
 } from "lucide-react"
-import { MeasureChart } from "./MeasureChart"
-import NetworkConnectionErrorCard from "./NetworkConnectionErrorCard"
-import MesurementsSection from "./dashboard/MeasurementsSection"
-import StatusSection from "./dashboard/StatusSection"
-import { HardwareDetails } from "./hardware/HardwareDetails"
-import ModeControl from "./dashboard/ModeControl"
-import ManualControls from "./dashboard/ManualControls"
+import { MeasureChart } from "../chart/MeasureChart"
+import NetworkConnectionErrorCard from "../error/NetworkConnectionErrorCard"
+import MesurementsSection from "../dashboard/MeasurementsSection"
+import StatusSection from "../dashboard/StatusSection"
+import { HardwareDetails } from "../hardware/HardwareDetails"
+import ModeControl from "../dashboard/ModeControl"
+import ManualControls from "../dashboard/ManualControls"
 
 function DashboardSkeleton() {
   return (
@@ -62,7 +62,11 @@ export function Dashboard() {
 
   if (isLoading) return <DashboardSkeleton />
   if (error)
-    return NetworkConnectionErrorCard({ error })
+    return (
+    <div className="flex items-center justify-center min-h-[50vh] p-8">
+      <NetworkConnectionErrorCard error={error}/>
+    </div>
+    );
   if (!status) return null
 
   return (

@@ -1,7 +1,7 @@
 
 import { RefreshCw, WifiOff } from "lucide-react";
-import { Card, CardContent } from "./ui/card"
-import { Button } from "./ui/button";
+import { Card, CardContent } from "../ui/card"
+import { Button } from "../ui/button";
 
 export default function NetworkConnectionErrorCard({error,refetch}: { error: Error, refetch?: () => void }) {
     return (
