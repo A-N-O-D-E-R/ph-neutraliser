@@ -1,11 +1,11 @@
-import { Settings } from "@/types"
+import { Settings } from "../../types"
 import React from "react"
 import { Card, CardContent } from "../ui/card"
 import { SectionHeader } from "./Section"
 import { Download, HardDrive, Upload } from "lucide-react"
 import { Button } from "../ui/button"
-import { cn } from "@/lib/utils"
-import { downloadFile } from "@/utils/tools"
+import { cn } from "../../lib/utils"
+import { downloadFile } from "../../utils/tools"
 
 export default function BackupSection({ settings, update }: { settings: Settings , update: (partial: Partial<Settings>) => void}) {
   const fileInputRef = React.useRef<HTMLInputElement>(null)

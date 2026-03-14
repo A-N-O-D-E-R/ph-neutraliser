@@ -2,8 +2,8 @@ import React from "react";
 import { Input } from "../ui/input";
 import { CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Eye, EyeOff, ShieldCheck, User } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { UserRole } from "@/types";
+import { cn } from "../../lib/utils";
+import { UserRole } from "../../types";
 
 export function SectionHeader({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (

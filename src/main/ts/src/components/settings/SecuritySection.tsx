@@ -1,7 +1,7 @@
 import { Shield } from "lucide-react"
 import { Card, CardContent } from "../ui/card"
 import { Field, PasswordInput, SectionHeader, ToggleGroup } from "./Section"
-import { Settings } from "@/types"
+import { Settings } from "../../types"
 import { Input } from "../ui/input"
 
 export default function SecuritySection({

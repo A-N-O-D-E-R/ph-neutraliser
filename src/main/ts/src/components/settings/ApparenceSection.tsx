@@ -1,7 +1,7 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { SectionHeader, ToggleGroup } from "./Section";
-import { Theme } from "@/hooks/use-theme";
+import { Theme } from "../../hooks/use-theme";
 
 export default function AppearanceSection({ theme, setTheme }: { theme: Theme; setTheme: (t: Theme) => void }) {
   return (
