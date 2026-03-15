@@ -10,7 +10,7 @@ public class PhRegulatorUsage extends RegulatorUsage {
 
 
     public PhRegulatorUsage(Regulator regulator, Sensor sensor, String metricName) {
-        if (sensor.getType() != Sensor.Type.PHMETER) {
+        if (sensor.getSensorType() != Sensor.Type.PHMETER) {
             throw new IllegalArgumentException("regulator must regulate a sensor of type PHMETER");
         }
         setRegulatedSensor(sensor);

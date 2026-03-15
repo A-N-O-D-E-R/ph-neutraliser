@@ -14,7 +14,7 @@ import lombok.ToString;
 public class TankLevelSensorUsage extends SensorUsage<Boolean> {
     
     public TankLevelSensorUsage(Sensor sensor, String metricName) {
-        if (sensor.getType() != Sensor.Type.TANKLEVEL) {
+        if (sensor.getSensorType() != Sensor.Type.TANKLEVEL) {
             throw new IllegalArgumentException("Sensor must be of type TANKLEVEL");
         }
         setComponent(sensor);
