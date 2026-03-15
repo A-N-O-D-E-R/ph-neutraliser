@@ -26,6 +26,7 @@
         <arduino-cli.version>0.35.2</arduino-cli.version>
         <j4ino.version>1.0-SNAPSHOT</j4ino.version>
         <openapi.version>2.3.0</openapi.version>
+        <skip.arduino.compile>false</skip.arduino.compile>
     </properties>
 
     <dependencies>
@@ -181,6 +182,7 @@
                 <version>1.0.0-SNAPSHOT</version>
 
                 <configuration>
+                    <skip>${skip.arduino.compile}</skip>
                     <arduinoCliVersion>${arduino-cli.version}</arduinoCliVersion>
                     <fqbn>arduino:avr:uno</fqbn>
                     <sketchDir>${arduino.dir}</sketchDir>
@@ -240,4 +242,19 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>local</id>
+            <activation>
+                <property>
+                    <name>spring-boot.run.profiles</name>
+                    <value>local</value>
+                </property>
+            </activation>
+            <properties>
+                <skip.arduino.compile>true</skip.arduino.compile>
+            </properties>
+        </profile>
+    </profiles>
 </project>
