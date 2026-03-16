@@ -164,10 +164,16 @@ export type ExportFormat = "csv" | "json"
 
 export type UserRole = "admin" | "operator"
 
-export interface AppUser {
-  id: string
+
+export interface AuthUser {
   username: string
-  passwordHash: string  
   role: UserRole
+}
+
+export interface AppUser extends AuthUser {
+  id: string
+  passwordHash: string
   createdAt: string
 }
+
+

@@ -16,9 +16,11 @@ import {
   Cpu,
   Settings,
   Users,
+  LogOut,
 } from "lucide-react"
 
 import { useNavigation, type Page } from "../hooks/use-navigation"
+import { useAuth } from "../hooks/use-auth"
 import { FlaskConical } from "lucide-react"
 
 const navItems: { label: string; page: Page; icon: React.ReactNode }[] = [
@@ -26,17 +28,9 @@ const navItems: { label: string; page: Page; icon: React.ReactNode }[] = [
   { label: "Hardware", page: "hardware", icon: <Cpu /> },
 ]
 
-function useAuthMethod(): "credentials" | "oauth2" {
-  try {
-    const raw = localStorage.getItem("app-settings")
-    if (raw) return JSON.parse(raw)?.authMethod ?? "credentials"
-  } catch {}
-  return "credentials"
-}
-
 export function AppSidebar() {
   const { page, setPage } = useNavigation()
-  const authMethod = useAuthMethod()
+  const { authMethod, user, logout } = useAuth()
 
   const systemItems: { label: string; page: Page; icon: React.ReactNode }[] = [
     ...(authMethod === "credentials" ? [{ label: "Users", page: "userManagement" as Page, icon: <Users /> }] : []),
@@ -107,7 +101,19 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* FOOTER */}
-      <SidebarFooter className="px-6 py-4">
+      <SidebarFooter className="px-6 py-4 space-y-2">
+        {user && (
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground truncate">{user.username}</span>
+            <button
+              onClick={logout}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
         <p className="text-xs text-muted-foreground">v1.0.0</p>
       </SidebarFooter>
 

@@ -3,30 +3,20 @@ import { UserForm } from "../userManagement/UserForm"
 import { AppUser, UserRole } from "../../types"
 import { UsersCard } from "../userManagement/UserCard"
 import { UserManagementHeader } from "../userManagement/UserManagementHeader"
-
-const STORAGE_KEY = "app-users"
-
-function loadUsers(): AppUser[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return []
-}
-
-function saveUsers(users: AppUser[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(users))
-}
+import { STORAGE_KEYS } from "../../utils/consts"
+import { loadArrayFromStorage, saveToStorage } from "../../utils/storage-helper"
 
 export function UserManagementPage() {
-  const [users, setUsers] = React.useState<AppUser[]>(loadUsers)
+  const [users, setUsers] = React.useState<AppUser[]>(() =>
+    loadArrayFromStorage<AppUser>(STORAGE_KEYS.USERS, localStorage)
+  )
   const [showForm, setShowForm] = React.useState(false)
   const [editingId, setEditingId] = React.useState<string | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = React.useState<string | null>(null)
 
   function persist(next: AppUser[]) {
     setUsers(next)
-    saveUsers(next)
+    saveToStorage(STORAGE_KEYS.USERS, localStorage, next)
   }
 
   function handleCreate(data: { username: string; password: string; role: UserRole }) {

@@ -13,61 +13,36 @@ import MonitoringSection from "../settings/MonitoringSection"
 import ExportLogsSection from "../settings/LogsSection"
 import BackupSection from "../settings/BackupSection"
 import AppearanceSection from "../settings/ApparenceSection"
-
-
-function loadSettings(): Settings {
-  try {
-    const raw = localStorage.getItem("app-settings") // TODO: let the back handle the settings
-    if (raw) return { ...defaultSettings, ...JSON.parse(raw) }
-  } catch {}
-  return defaultSettings
-}
-
-const defaultSettings: Settings = {
-  systemName: "",
-  location: "",
-  networkMode: "dhcp",
-  ipAddress: "",
-  subnetMask: "255.255.255.0",
-  gateway: "",
-  dns1: "",
-  dns2: "",
-  hostname: "",
-  timezone: "UTC",
-  ntpServer: "pool.ntp.org",
-  authMethod: "credentials",
-  oauth2Url: "",
-  oauth2ClientId: "",
-  oauth2ClientSecret: "",
-  credUsername: "",
-  credPassword: "",
-  teamsEnabled: false,
-  teamsWebhook: "",
-  slackEnabled: false,
-  slackWebhook: "",
-  telegramEnabled: false,
-  telegramBotToken: "",
-  telegramChatId: "",
-  zabbixUrl: "",
-  zabbixApiToken: "",
-  zabbixHost: "",
-}
-
+import { useSaveSettings, useSettings } from "../../hooks/use-settings"
+import { DEFAULT_SETTINGS } from "../../utils/consts"
 
 export function SettingsPage() {
   const { theme, setTheme } = useTheme()
-  const [settings, setSettings] = React.useState<Settings>(loadSettings)
+
+  const { data: settings } = useSettings()
+  const saveSettingsMutation = useSaveSettings()
+
+  const [localSettings, setLocalSettings] = React.useState<Settings | null>(null)
   const [saved, setSaved] = React.useState(false)
 
+  React.useEffect(() => {
+    if (settings) setLocalSettings(settings)
+  }, [settings])
+
   function update(partial: Partial<Settings>) {
-    setSettings(s => ({ ...s, ...partial }))
+    setLocalSettings((s) => (s ? { ...s, ...partial } : s))
     setSaved(false)
   }
 
   function save() {
-    localStorage.setItem("app-settings", JSON.stringify(settings))
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    if (!localSettings) return
+
+    saveSettingsMutation.mutate(localSettings, {
+      onSuccess: () => {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+      },
+    })
   }
 
   return (
@@ -83,15 +58,15 @@ export function SettingsPage() {
         </Button>
       </div>
 
-      <SystemIdentitySection settings={settings} update={update} />
-      <NetworkSection settings={settings} update={update} />
-      <TimeSection settings={settings} update={update} />
+      <SystemIdentitySection settings={localSettings ?? DEFAULT_SETTINGS} update={update} />
+      <NetworkSection settings={localSettings ?? DEFAULT_SETTINGS} update={update} />
+      <TimeSection settings={localSettings ?? DEFAULT_SETTINGS} update={update} />
       <AppearanceSection theme={theme} setTheme={setTheme} />
-      <SecuritySection settings={settings} update={update} />
-      <MessagingSection settings={settings} update={update} />
-      <MonitoringSection settings={settings} update={update} />
+      <SecuritySection settings={localSettings ?? DEFAULT_SETTINGS} update={update} />
+      <MessagingSection settings={localSettings ?? DEFAULT_SETTINGS} update={update} />
+      <MonitoringSection settings={localSettings ?? DEFAULT_SETTINGS} update={update} />
       <ExportLogsSection />
-      <BackupSection settings={settings} update={update} />
+      <BackupSection settings={localSettings ?? DEFAULT_SETTINGS} update={update} />
     </div>
   )
 }
