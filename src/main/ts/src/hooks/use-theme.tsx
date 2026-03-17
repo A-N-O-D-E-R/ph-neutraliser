@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { STORAGE_KEYS } from "../utils/consts"
-import { loadFromStorage, saveToStorage } from "@/utils/storage-helper"
+import { loadFromStorage, saveToStorage } from "../utils/storage-helper"
 
 export type Theme = "light" | "dark" | "system"
 
