@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ef84cbd0-3cd7-4ba0-94ce-09c8dbc4a0bd" alt="ph-neutralizer-banner" />
+</p>
+
 # OpenNeutralizer
 
 This project aim to create a simple OpenSource and OpenHardware ph-neutralizer, this can help future open lab initiative and create a simple fundation for a larger ecosystem. 
