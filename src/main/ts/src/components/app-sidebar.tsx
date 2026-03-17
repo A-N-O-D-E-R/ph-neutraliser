@@ -21,6 +21,7 @@ import {
 
 import { useNavigation, type Page } from "../hooks/use-navigation"
 import { useAuth } from "../hooks/use-auth"
+import { useAbility } from "../hooks/use-ability"
 import { FlaskConical } from "lucide-react"
 
 const navItems: { label: string; page: Page; icon: React.ReactNode }[] = [
@@ -30,10 +31,11 @@ const navItems: { label: string; page: Page; icon: React.ReactNode }[] = [
 
 export function AppSidebar() {
   const { page, setPage } = useNavigation()
-  const { authMethod, user, logout } = useAuth()
+  const { user, logout } = useAuth()
+  const ability = useAbility()
 
   const systemItems: { label: string; page: Page; icon: React.ReactNode }[] = [
-    ...(authMethod === "credentials" ? [{ label: "Users", page: "userManagement" as Page, icon: <Users /> }] : []),
+    ...(ability.can("manage", "User") ? [{ label: "Users", page: "userManagement" as Page, icon: <Users /> }] : []),
     { label: "Settings", page: "settings", icon: <Settings /> },
   ]
 

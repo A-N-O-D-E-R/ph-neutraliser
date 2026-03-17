@@ -3,21 +3,27 @@ import { UserForm } from "../userManagement/UserForm"
 import { AppUser, UserRole } from "../../types"
 import { UsersCard } from "../userManagement/UserCard"
 import { UserManagementHeader } from "../userManagement/UserManagementHeader"
-import { STORAGE_KEYS } from "../../utils/consts"
-import { loadArrayFromStorage, saveToStorage } from "../../utils/storage-helper"
+import { useUsers, useSaveUsers } from "../../hooks/use-users"
+import { useAbility } from "../../hooks/use-ability"
+import { useNavigation } from "../../hooks/use-navigation"
 
 export function UserManagementPage() {
-  const [users, setUsers] = React.useState<AppUser[]>(() =>
-    loadArrayFromStorage<AppUser>(STORAGE_KEYS.USERS, localStorage)
-  )
+  const ability = useAbility()
+  const { setPage } = useNavigation()
+  const { data: users = [] } = useUsers()
+  const saveUsers = useSaveUsers()
+
   const [showForm, setShowForm] = React.useState(false)
   const [editingId, setEditingId] = React.useState<string | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = React.useState<string | null>(null)
 
-  function persist(next: AppUser[]) {
-    setUsers(next)
-    saveToStorage(STORAGE_KEYS.USERS, localStorage, next)
-  }
+  React.useEffect(() => {
+    if (!ability.can("manage", "User")) {
+      setPage("dashboard")
+    }
+  }, [ability, setPage])
+
+  if (!ability.can("manage", "User")) return null
 
   function handleCreate(data: { username: string; password: string; role: UserRole }) {
     const newUser: AppUser = {
@@ -27,20 +33,23 @@ export function UserManagementPage() {
       role: data.role,
       createdAt: new Date().toISOString(),
     }
-    persist([...users, newUser])
+    saveUsers.mutate([...users, newUser])
     setShowForm(false)
   }
 
   function handleEdit(id: string, data: { username: string; password: string; role: UserRole }) {
-    persist(users.map(u => u.id === id
-      ? { ...u, username: data.username, role: data.role, ...(data.password ? { passwordHash: data.password } : {}) }
-      : u
-    ))
+    saveUsers.mutate(
+      users.map(u =>
+        u.id === id
+          ? { ...u, username: data.username, role: data.role, ...(data.password ? { passwordHash: data.password } : {}) }
+          : u
+      )
+    )
     setEditingId(null)
   }
 
   function handleDelete(id: string) {
-    persist(users.filter(u => u.id !== id))
+    saveUsers.mutate(users.filter(u => u.id !== id))
     setDeleteConfirmId(null)
   }
 
