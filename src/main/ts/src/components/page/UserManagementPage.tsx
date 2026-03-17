@@ -1,9 +1,9 @@
 import * as React from "react"
 import { UserForm } from "../userManagement/UserForm"
-import { AppUser, UserRole } from "../../types"
+import { UserRole } from "../../types"
 import { UsersCard } from "../userManagement/UserCard"
 import { UserManagementHeader } from "../userManagement/UserManagementHeader"
-import { useUsers, useSaveUsers } from "../../hooks/use-users"
+import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from "../../hooks/use-users"
 import { useAbility } from "../../hooks/use-ability"
 import { useNavigation } from "../../hooks/use-navigation"
 
@@ -11,7 +11,9 @@ export function UserManagementPage() {
   const ability = useAbility()
   const { setPage } = useNavigation()
   const { data: users = [] } = useUsers()
-  const saveUsers = useSaveUsers()
+  const createUser = useCreateUser()
+  const updateUser = useUpdateUser()
+  const deleteUser = useDeleteUser()
 
   const [showForm, setShowForm] = React.useState(false)
   const [editingId, setEditingId] = React.useState<string | null>(null)
@@ -26,31 +28,18 @@ export function UserManagementPage() {
   if (!ability.can("manage", "User")) return null
 
   function handleCreate(data: { username: string; password: string; role: UserRole }) {
-    const newUser: AppUser = {
-      id: crypto.randomUUID(),
-      username: data.username,
-      passwordHash: data.password,
-      role: data.role,
-      createdAt: new Date().toISOString(),
-    }
-    saveUsers.mutate([...users, newUser])
-    setShowForm(false)
+    createUser.mutate(data, { onSuccess: () => setShowForm(false) })
   }
 
   function handleEdit(id: string, data: { username: string; password: string; role: UserRole }) {
-    saveUsers.mutate(
-      users.map(u =>
-        u.id === id
-          ? { ...u, username: data.username, role: data.role, ...(data.password ? { passwordHash: data.password } : {}) }
-          : u
-      )
+    updateUser.mutate(
+      { id, username: data.username, role: data.role, ...(data.password ? { password: data.password } : {}) },
+      { onSuccess: () => setEditingId(null) }
     )
-    setEditingId(null)
   }
 
   function handleDelete(id: string) {
-    saveUsers.mutate(users.filter(u => u.id !== id))
-    setDeleteConfirmId(null)
+    deleteUser.mutate(id, { onSuccess: () => setDeleteConfirmId(null) })
   }
 
   const existingUsernames = users.map(u => u.username)

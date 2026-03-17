@@ -3,15 +3,18 @@ import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { LogIn } from "lucide-react"
 
-export default function CredentialsForm({ onLogin }: { onLogin: (u: string, p: string) => boolean }) {
+export default function CredentialsForm({ onLogin }: { onLogin: (u: string, p: string) => Promise<boolean> }) {
   const [username, setUsername] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [error, setError] = React.useState("")
+  const [loading, setLoading] = React.useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
-    const ok = onLogin(username, password)
+    setLoading(true)
+    const ok = await onLogin(username, password)
+    setLoading(false)
     if (!ok) setError("Invalid username or password")
   }
 
@@ -41,9 +44,9 @@ export default function CredentialsForm({ onLogin }: { onLogin: (u: string, p: s
         />
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-full" disabled={loading}>
         <LogIn className="h-4 w-4 mr-2" />
-        Sign in
+        {loading ? "Signing in…" : "Sign in"}
       </Button>
     </form>
   )

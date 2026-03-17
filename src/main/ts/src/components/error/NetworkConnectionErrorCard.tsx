@@ -13,7 +13,7 @@ export default function NetworkConnectionErrorCard({error,refetch}: { error: Err
                 <p className="font-semibold text-lg">Connection Error</p>
                 <p className="text-sm text-muted-foreground">{error.message}</p>
                 {refetch && (
-                  <Button variant="outline" size="sm" onClick={() => refetch()}>
+                  <Button variant="outline" size="sm" onClick={refetch}>
                     <RefreshCw className="w-4 h-4 mr-1.5" />
                     Retry
                   </Button>

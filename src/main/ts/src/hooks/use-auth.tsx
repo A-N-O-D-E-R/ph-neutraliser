@@ -1,43 +1,31 @@
 import { useSettings } from "./use-settings"
-import { useUsers } from "./use-users"
-import type { AuthUser } from "../types"
+import { userApi } from "../api/client"
 import { useSessionStore } from "../store/userStore"
 
 export function useAuth() {
   const { user, setUser } = useSessionStore()
   const { data: settings, isLoading: settingsLoading } = useSettings()
-  const { data: users, isLoading: usersLoading } = useUsers()
 
-  function login(username: string, password: string): boolean {
+  async function login(username: string, password: string): Promise<boolean> {
     if (!settings) return false
 
-    // check stored users first
-    if (users && users.length > 0) {
-      const match = users.find(
-        (u) => u.username === username && u.passwordHash === password
-      )
-
-      if (match) {
-        const authUser: AuthUser = {
-          username: match.username,
-          role: match.role,
-        }
-
-        setUser(authUser)
+    try {
+      const res = await userApi.login(username, password)
+      if (res.success && res.data) {
+        setUser(res.data)
         return true
       }
-
-      return false
+    } catch {
+      // 401 or network error — fall through to settings fallback
     }
 
-    // fallback credential auth
+    // fallback credential auth (when no users exist in DB yet)
     if (
       settings.credUsername &&
       username === settings.credUsername &&
       password === settings.credPassword
     ) {
-      const authUser: AuthUser = { username, role: "admin" }
-      setUser(authUser)
+      setUser({ username, role: "admin" })
       return true
     }
 
@@ -64,7 +52,7 @@ export function useAuth() {
 
   return {
     user,
-    isLoading: settingsLoading || usersLoading,
+    isLoading: settingsLoading,
     authMethod: settings?.authMethod,
     oauth2Url: settings?.oauth2Url,
     login,

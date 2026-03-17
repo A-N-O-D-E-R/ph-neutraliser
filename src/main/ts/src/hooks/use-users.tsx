@@ -1,42 +1,39 @@
-import { AppUser } from "../types"
-import { STORAGE_KEYS } from "../utils/consts"
-import { loadArrayFromStorage, saveToStorage } from "../utils/storage-helper"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { userApi } from "../api/client"
+import type { UserRole } from "../types"
 
 export function useUsers() {
   return useQuery({
     queryKey: ["users"],
-    queryFn: () => {
-      const users = loadArrayFromStorage<AppUser>(STORAGE_KEYS.USERS, localStorage)
-
-      if (users.length === 0) {
-        const defaultUsers: AppUser[] = [
-          {
-            id: crypto.randomUUID(),
-            username: "admin",
-            passwordHash: "admin",
-            role: "admin",
-            createdAt: new Date().toISOString(),
-          },
-        ]
-        saveToStorage(STORAGE_KEYS.USERS, localStorage, defaultUsers)
-        return defaultUsers
-      }
-      return users
+    queryFn: async () => {
+      const res = await userApi.getAll()
+      return res.data ?? []
     },
   })
 }
 
-export function useSaveUsers() {
+export function useCreateUser() {
   const qc = useQueryClient()
-
   return useMutation({
-    mutationFn: async (users: AppUser[]) => {
-      saveToStorage(STORAGE_KEYS.USERS, localStorage, users)
-      return users
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["users"] })
-    },
+    mutationFn: (data: { username: string; password: string; role: UserRole }) =>
+      userApi.create(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),
+  })
+}
+
+export function useUpdateUser() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...data }: { id: string; username: string; password?: string; role: UserRole }) =>
+      userApi.update(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),
+  })
+}
+
+export function useDeleteUser() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => userApi.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),
   })
 }

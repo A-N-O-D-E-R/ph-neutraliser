@@ -14,7 +14,6 @@ export const TIMEZONES = [
 
 export const STORAGE_KEYS = {
   SETTINGS: "app-settings",
-  USERS: "app-users",
   SESSION: "app-session",
   THEME: "theme",
 } as const
