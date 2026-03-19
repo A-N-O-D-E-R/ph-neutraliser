@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { neutralizerApi } from '../api/client'
-import type { NeutralizerConfiguration, CalibrationRequest, ManualControlRequest, UsageConnectionRequest, CreateSensorRequest } from '../types'
+import type { NeutralizerConfiguration, CalibrationRequest, ManualControlRequest, UsageConnectionRequest, CreateSensorRequest, StreamEventConfig, ApiResponse, NeutralizerStatus, MeasureEvent, NeutralizerEvent } from '../types'
+import { useEffect, useRef, useState } from 'react'
 
 export function useStatus() {
   return useQuery({
     queryKey: ['status'],
     queryFn: neutralizerApi.getStatus,
-    refetchInterval: 2000,
   })
 }
 
@@ -103,7 +103,6 @@ export function useHardwareStatus() {
   return useQuery({
     queryKey: ['hardware'],
     queryFn: neutralizerApi.getHardwareStatus,
-    refetchInterval: 5000,
   })
 }
 
@@ -185,3 +184,79 @@ export function useRestartSensorMonitor() {
     mutationFn: neutralizerApi.restartSensorMonitor,
   })
 }
+
+
+const LIVE_TIMEOUT_MS = 30_000
+
+export function useServerEvents() {
+  const lastEventAt = useRef<number | null>(null)
+  const [isLive, setIsLive] = useState(false)
+
+  useStreamedEvents([
+    {
+      event: "status",
+      queryKey: ["status"],
+      updater: (old: ApiResponse<NeutralizerStatus>, data: NeutralizerEvent) => {
+        lastEventAt.current = Date.now()
+        return old?.data ? { ...old, data: { ...old.data, status: data.status, acidLevel: data.acidTankState } } : old
+      },
+    },
+    {
+      event: "ph",
+      queryKey: ["status"],
+      updater: (old: ApiResponse<NeutralizerStatus>, data: MeasureEvent) => {
+        lastEventAt.current = Date.now()
+        return old?.data ? { ...old, data: { ...old.data, currentPh: data.value } } : old
+      },
+    },
+    {
+      event: "degree",
+      queryKey: ["status"],
+      updater: (old: ApiResponse<NeutralizerStatus>, data: MeasureEvent) => {
+        lastEventAt.current = Date.now()
+        return old?.data ? { ...old, data: { ...old.data, temperature: data.value } } : old
+      },
+    },
+  ])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const live = lastEventAt.current !== null && Date.now() - lastEventAt.current < LIVE_TIMEOUT_MS
+      setIsLive(live)
+    }, 5_000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  return { isLive }
+}
+
+export function useStreamedEvents(configs: StreamEventConfig[]) {
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    const es = neutralizerApi.getEventSource()
+
+    const handlers = configs.map(({ event, queryKey, updater }) => {
+      const handler = (e: MessageEvent) => {
+        const data = JSON.parse(e.data)
+
+        queryClient.setQueryData(queryKey, (old: any) =>
+          updater ? updater(old, data) : data
+        )
+      }
+
+      es.addEventListener(event, handler)
+      return { event, handler }
+    })
+
+    return () => {
+      handlers.forEach(({ event, handler }) => {
+        es.removeEventListener(event, handler)
+      })
+      // ❌ do NOT close (shared connection)
+    }
+  }, [configs, queryClient])
+}
+
+

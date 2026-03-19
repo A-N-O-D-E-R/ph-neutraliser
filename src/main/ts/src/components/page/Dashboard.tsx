@@ -8,7 +8,8 @@ import {
   useEmptyNeutralizer,
   useActivateAcidPump,
   useActivateAgitation,
-  useHardwareStatus
+  useHardwareStatus,
+  useServerEvents,
 } from "../../hooks/useNeutralizer"
 import { Skeleton } from "../ui/skeleton"
 import {
@@ -51,6 +52,7 @@ function DashboardSkeleton() {
 export function Dashboard() {
   const { data: status, isLoading, error } = useStatus()
   const { data: hardware } = useHardwareStatus()
+  const { isLive } = useServerEvents()
   const { mutate: startAutomatic, isPending: isStarting } = useStartAutomatic()
   const { mutate: stopAutomatic, isPending: isStopping } = useStopAutomatic()
   const { mutate: triggerNeutralization, isPending: isNeutralizationPending } = useTriggerNeutralization();
@@ -79,13 +81,22 @@ export function Dashboard() {
             Monitor and control your pH neutralization system
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-          </span>
-          Live
-        </div>
+        {isLive ? (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            Live
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="relative flex h-2 w-2">
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-muted-foreground/40" />
+            </span>
+            No signal
+          </div>
+        )}
       </div>
 
       {/* MEASUREMENTS */}

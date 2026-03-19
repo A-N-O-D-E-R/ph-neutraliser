@@ -177,3 +177,8 @@ export interface AppUser extends AuthUser {
 }
 
 
+export type StreamEventConfig<T = any> = {
+  event: string
+  queryKey: unknown[]
+  updater?: (old: T | undefined, data: T) => T
+}

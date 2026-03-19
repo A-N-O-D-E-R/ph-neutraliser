@@ -21,6 +21,10 @@ const api = ky.create({
   prefixUrl: `/api`,
 });
 
+
+
+
+
 export const neutralizerApi = {
   // Status
   getStatus: () => api.get('control/status').json<ApiResponse<NeutralizerStatus>>(),
@@ -110,6 +114,12 @@ export const neutralizerApi = {
 
   restartSensorMonitor: () =>
     api.post('control/restart-sensor-monitor').json<void>(),
+
+
+  getEventSource: () => {
+    const eventSource = new EventSource('/api/events/subscribe');
+    return eventSource;
+  }
 }
 
 export const userApi = {
