@@ -2,17 +2,17 @@ import {
   useHardwareStatus,
   useMeasureEvents,
   useUsages,
-} from "../hooks/useNeutralizer"
-import { Card, CardContent } from "./ui/card"
-import { Button } from "./ui/button"
-import { HardwareSkeleton } from "./hardware/HardwareSkeleton"
-import type { HardwareStatus } from "../types"
+} from "../../hooks/useNeutralizer"
+import { Card, CardContent } from "../ui/card"
+import { Button } from "../ui/button"
+import { HardwareSkeleton } from "../hardware/HardwareSkeleton"
+import type { HardwareStatus } from "../../types"
 import {Cpu, RefreshCw} from "lucide-react"
-import { HardwareDetails } from "./hardware/HardwareDetails"
-import RelayStatus from "./hardware/RelayStatus"
-import SensorUsageList from "./hardware/SensorUsageList"
-import { ActiveSensorsCard, ConnectionStatusCard } from "./hardware/ConnectionSatusCard"
-import NetworkConnectionErrorCard from "./NetworkConnectionErrorCard"
+import { HardwareDetails } from "../hardware/HardwareDetails"
+import RelayStatus from "../hardware/RelayStatus"
+import SensorUsageList from "../hardware/SensorUsageList"
+import { ActiveSensorsCard, ConnectionStatusCard } from "../hardware/ConnectionSatusCard"
+import NetworkConnectionErrorCard from "../error/NetworkConnectionErrorCard"
 
 // This comes from the embedded firmware and should ideally be retrieved from the API, but for now we hardcode it here for display purposes
 const RELAY_LABELS = [

@@ -15,7 +15,7 @@ import lombok.ToString;
 public class PhMeterUsage extends SensorUsage<Double> {
 
     public PhMeterUsage(Sensor sensor, String metricName) {
-        if (sensor.getType() != Sensor.Type.PHMETER) {
+        if (sensor.getSensorType() != Sensor.Type.PHMETER) {
             throw new IllegalArgumentException("Sensor must be of type PHMETER");
         }
         setId(java.util.UUID.randomUUID());

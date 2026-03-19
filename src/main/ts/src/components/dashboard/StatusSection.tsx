@@ -1,6 +1,6 @@
 import { Gauge, Play, Settings2, Wifi, WifiOff } from "lucide-react";
-import { StatusCard } from "../StatusCard";
-import { HardwareStatus, NeutralizerStatus } from "@/types";
+import { StatusCard } from "../card/StatusCard";
+import { HardwareStatus, NeutralizerStatus } from "../../types";
 
 
 export default function StatusSection({status, hardware}:{status: NeutralizerStatus, hardware : HardwareStatus}){

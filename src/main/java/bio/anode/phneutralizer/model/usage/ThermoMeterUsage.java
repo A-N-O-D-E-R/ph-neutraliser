@@ -14,7 +14,7 @@ import lombok.ToString;
 public class ThermoMeterUsage extends SensorUsage<Double> {
 
     public ThermoMeterUsage(Sensor sensor, String metricName) {
-        if (sensor.getType() != Sensor.Type.THERMOMETER) {
+        if (sensor.getSensorType() != Sensor.Type.THERMOMETER) {
             throw new IllegalArgumentException("Sensor must be of type THERMOMETER");
         }
         setComponent(sensor);

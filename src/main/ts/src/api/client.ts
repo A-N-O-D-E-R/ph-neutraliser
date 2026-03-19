@@ -12,12 +12,18 @@ import type {
   UsageDto,
   UsageConnectionRequest,
   CreateSensorRequest,
+  AppUser,
+  AuthUser,
 } from '../types'
 
 
 const api = ky.create({
   prefixUrl: `/api`,
 });
+
+
+
+
 
 export const neutralizerApi = {
   // Status
@@ -108,4 +114,26 @@ export const neutralizerApi = {
 
   restartSensorMonitor: () =>
     api.post('control/restart-sensor-monitor').json<void>(),
+
+
+  getEventSource: () => {
+    const eventSource = new EventSource('/api/events/subscribe');
+    return eventSource;
+  }
+}
+
+export const userApi = {
+  getAll: () => api.get('users').json<ApiResponse<AppUser[]>>(),
+
+  create: (data: { username: string; password: string; role: string }) =>
+    api.post('users', { json: data }).json<ApiResponse<AppUser>>(),
+
+  update: (id: string, data: { username: string; password?: string; role: string }) =>
+    api.put(`users/${id}`, { json: data }).json<ApiResponse<AppUser>>(),
+
+  delete: (id: string) =>
+    api.delete(`users/${id}`).json<ApiResponse<void>>(),
+
+  login: (username: string, password: string) =>
+    api.post('users/login', { json: { username, password } }).json<ApiResponse<AuthUser>>(),
 }

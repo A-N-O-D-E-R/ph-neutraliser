@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.anode.logging.EventMarkers;
 import com.anode.logging.reader.EventLogReader;
@@ -14,16 +15,19 @@ import bio.anode.phneutralizer.dto.EventFilterRequest;
 import bio.anode.phneutralizer.dto.EventResponse;
 import bio.anode.phneutralizer.enums.Level;
 import bio.anode.phneutralizer.enums.Status;
+import bio.anode.phneutralizer.model.event.Event;
 import bio.anode.phneutralizer.model.event.MeasureEvent;
 import bio.anode.phneutralizer.model.event.NeutralizerEvent;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,12 +36,33 @@ public class EventService {
 
     private final EventLogReader jsonReader;
     private final EventXmlLogReader xmlReader;
+    private final List<SseEmitter> emitters;
 
     public EventService(@Value("${logging.event.path}") Path archiveDir) {
         this.jsonReader = new EventLogReader(archiveDir);
         this.xmlReader = new EventXmlLogReader(archiveDir);
+        emitters = new CopyOnWriteArrayList<>();
     }
 
+    public SseEmitter subscribe() {
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        emitters.add(emitter);
+        emitter.onCompletion(() -> emitters.remove(emitter));
+        emitter.onTimeout(() -> emitters.remove(emitter));
+        return emitter;
+    }
+
+    public void broadcast(String name, Event event) {
+        for (SseEmitter emitter : emitters) {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name(name)
+                        .data(event));
+            } catch (IOException e) {
+                emitters.remove(emitter);
+            }
+        }
+    }
     
     public EventResponse getMeasureEvents(EventFilterRequest filter) {
         log.debug("Getting measure events with filter: {}", filter);
@@ -140,20 +165,19 @@ public class EventService {
         return String.format("%s,%s,%s,%s%n", timestamp, metric, formattedValue, unit);
     }
 
-
-
-
     @Async
     @EventListener
     public void archiveEvent(MeasureEvent event) {
-        log.debug("Archiving measure event: {}", event);
         log.info(EventMarkers.EVENT, "{}", event);
+        broadcast(event.metricName(), event);
     }
 
     
+    @Async
+    @EventListener
     public void archiveEvent(NeutralizerEvent event) {
-        log.debug("Archiving neutralizer event: {}", event);
         log.info(EventMarkers.EVENT, "{}", event);
+        broadcast("status", event);
     }
 
     private List<MeasureEvent> readMeasureEvents(EventFilterRequest filter) {
