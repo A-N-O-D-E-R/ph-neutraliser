@@ -10,6 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import jakarta.servlet.http.HttpServletRequest;
+import java.security.cert.X509Certificate;
 
 import java.util.List;
 import java.util.UUID;
@@ -62,5 +66,14 @@ public class UserController {
         return userService.login(request.getUsername(), request.getPassword())
                 .map(authUser -> ResponseEntity.ok(ApiResponse.success(authUser)))
                 .orElse(ResponseEntity.status(401).body(ApiResponse.error("Invalid credentials")));
+    }
+
+
+    @GetMapping("/whoami")
+    public String whoami(HttpServletRequest request) throws Exception {
+        X509Certificate[] certs =
+            (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+
+        return certs[0].getSubjectDN().getName();
     }
 }
