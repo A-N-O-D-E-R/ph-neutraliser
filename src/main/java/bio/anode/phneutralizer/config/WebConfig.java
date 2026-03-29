@@ -23,10 +23,8 @@ public class WebConfig implements WebMvcConfigurer {
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/neutralizer")
                 .setViewName("forward:/index.html");
-
         registry.addViewController("/neutralizer/**")
                 .setViewName("forward:/index.html");
-
         registry.addViewController("/")
                 .setViewName("redirect:/neutralizer/");
     }

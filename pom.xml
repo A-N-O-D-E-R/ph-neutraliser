@@ -22,7 +22,7 @@
         <frontend.dir>${project.basedir}/src/main/ts</frontend.dir>
         <arduino.dir>${project.basedir}/src/main/arduino</arduino.dir>
         <node.version>v20.20.0</node.version>
-        <pnpm.version>10.20.0</pnpm.version>
+        <pnpm.version>10.33.0</pnpm.version>
         <arduino-cli.version>0.35.2</arduino-cli.version>
         <j4ino.version>1.0-SNAPSHOT</j4ino.version>
         <openapi.version>2.3.0</openapi.version>
