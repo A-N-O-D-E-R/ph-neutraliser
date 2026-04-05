@@ -2,6 +2,7 @@ package bio.anode.phneutralizer.controller;
 
 import bio.anode.phneutralizer.dto.*;
 import bio.anode.phneutralizer.service.UserService;
+import bio.anode.phneutralizer.dto.AuthUserDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -10,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.cert.X509Certificate;
@@ -64,7 +64,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<AuthUserDto>> login(@Valid @RequestBody LoginRequest request) {
         log.debug("POST /users/login username={}", request.getUsername());
         return userService.login(request.getUsername(), request.getPassword())
-                .map(authUser -> ResponseEntity.ok(ApiResponse.success(authUser)))
+                .map(token -> ResponseEntity.ok(ApiResponse.success(token)))
                 .orElse(ResponseEntity.status(401).body(ApiResponse.error("Invalid credentials")));
     }
 

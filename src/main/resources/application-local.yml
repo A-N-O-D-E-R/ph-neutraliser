@@ -31,7 +31,11 @@ server:
     
 logging:
   level:
-    bio.anode.phneutralizer: DEBUG
+    bio.anode.phneutralizer: INFO
   event:
     path: ${java.io.tmpdir}/logs
     retention-days: 2
+
+anode:
+  security:
+    env-local-jwt: true

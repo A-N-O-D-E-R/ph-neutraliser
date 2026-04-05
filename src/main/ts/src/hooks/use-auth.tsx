@@ -8,7 +8,6 @@ export function useAuth() {
 
   async function login(username: string, password: string): Promise<boolean> {
     if (!settings) return false
-
     try {
       const res = await userApi.login(username, password)
       if (res.success && res.data) {
@@ -18,17 +17,6 @@ export function useAuth() {
     } catch {
       // 401 or network error — fall through to settings fallback
     }
-
-    // fallback credential auth (when no users exist in DB yet)
-    if (
-      settings.credUsername &&
-      username === settings.credUsername &&
-      password === settings.credPassword
-    ) {
-      setUser({ username, role: "admin" })
-      return true
-    }
-
     return false
   }
 

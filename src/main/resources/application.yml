@@ -81,3 +81,14 @@ b2:
   application-key-id: ${B2_KEY_ID:}
   application-key: ${B2_KEY:}
   default-bucket-name: ${B2_BUCKET:ph-neutralizer-backup}
+
+anode:
+  security:
+    env-local-jwt: true
+    login-url: /neutralizer
+    allowedPatterns: 
+    - "/api/users/login"
+    - "/neutralizer"
+    - "/index.html"
+    - "/assets/**"
+    - "/favicon.ico"

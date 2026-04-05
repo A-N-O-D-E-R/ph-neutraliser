@@ -15,15 +15,21 @@ import type {
   AppUser,
   AuthUser,
 } from '../types'
-
+import { useSessionStore } from '../store/userStore';
 
 const api = ky.create({
-  prefixUrl: `/api`,
+  prefixUrl: '/api',
+  hooks: {
+    beforeRequest: [
+      request => {
+        const { user } = useSessionStore.getState();
+        if (user?.token) {
+          request.headers.set('Authorization', `Bearer ${user.token}`);
+        }
+      }
+    ]
+  }
 });
-
-
-
-
 
 export const neutralizerApi = {
   // Status

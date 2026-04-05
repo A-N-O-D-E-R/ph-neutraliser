@@ -167,6 +167,7 @@ export type UserRole = "admin" | "operator"
 
 export interface AuthUser {
   username: string
+  token: string
   role: UserRole
 }
 

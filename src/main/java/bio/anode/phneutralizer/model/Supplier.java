@@ -24,9 +24,9 @@ public class Supplier {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private SupplierType type;
 
-    public enum Type {
+    public enum SupplierType {
         INTERNAL,
         CONTRACTOR,
         SHOP
