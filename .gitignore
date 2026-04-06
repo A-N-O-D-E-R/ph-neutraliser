@@ -17,3 +17,6 @@ logs/
 
 # db
 hardware.db
+
+#custom config
+application-custom.yaml

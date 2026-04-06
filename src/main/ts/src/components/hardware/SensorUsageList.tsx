@@ -3,7 +3,7 @@ import { Badge } from "../ui/badge"
 import { Cpu } from "lucide-react"
 import { UsageCard } from "./UsageCard"
 import { AddSensorCard } from "./AddSensorCard"
-import { MeasureEvent, UsageDto } from "@/types"
+import { MeasureEvent, UsageDto } from "../../types"
 
 export default function SensorUsageList({ sensors, measureEvents }: { sensors: UsageDto[]; measureEvents: MeasureEvent[]}) {
     const lastMeasureByMetric = (measureEvents ?? []).reduce<Record<string, MeasureEvent>>((acc, event) => {

@@ -1,6 +1,6 @@
 import { Activity, Wifi, WifiOff } from "lucide-react";
 import { Card, CardContent } from "../ui/card"
-import { UsageDto } from "@/types";
+import { UsageDto } from "../../types";
 
 export function ConnectionStatusCard({ isConnected }: { isConnected: boolean }) {
     return (

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class MemorymeterUsage extends SensorUsage<Double> {
 
     public MemorymeterUsage(Sensor sensor, String metricName) {
-        if (sensor.getType() != Sensor.Type.MEMORYMETER) {
+        if (sensor.getSensorType() != Sensor.Type.MEMORYMETER) {
             throw new IllegalArgumentException("Sensor must be of type MEMORYMETER");
         }
         setComponent(sensor);

@@ -1,4 +1,10 @@
 -- ========================
+-- USERS
+-- ========================
+INSERT OR IGNORE INTO app_user(id, username, password_hash, role, created_at) VALUES
+('00000000-0000-0000-0000-000000000001','admin','admin','admin','2024-01-01T00:00:00Z');
+
+-- ========================
 -- SUPPLIERS
 -- ========================
 INSERT OR REPLACE INTO supplier(id, name, type) VALUES

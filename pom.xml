@@ -22,10 +22,13 @@
         <frontend.dir>${project.basedir}/src/main/ts</frontend.dir>
         <arduino.dir>${project.basedir}/src/main/arduino</arduino.dir>
         <node.version>v20.20.0</node.version>
-        <pnpm.version>10.20.0</pnpm.version>
+        <pnpm.version>10.33.0</pnpm.version>
         <arduino-cli.version>0.35.2</arduino-cli.version>
         <j4ino.version>1.0-SNAPSHOT</j4ino.version>
         <openapi.version>2.3.0</openapi.version>
+        <sqlite.version>3.45.1.0</sqlite.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
+        <skip.arduino.compile>false</skip.arduino.compile>
     </properties>
 
     <dependencies>
@@ -46,7 +49,7 @@
         <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
 
         <!-- Validation -->
@@ -84,6 +87,12 @@
             <artifactId>spring-boot-starter-b2</artifactId>
         </dependency>
 
+        <!-- security -->
+        <dependency>
+            <groupId>com.anode</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -95,12 +104,18 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.45.1.0</version>
+            <version>${sqlite.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
         </dependency>
 
         <dependency>
@@ -120,6 +135,11 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                         </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
@@ -135,7 +155,15 @@
                     </excludes>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                    </argLine>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
@@ -181,6 +209,7 @@
                 <version>1.0.0-SNAPSHOT</version>
 
                 <configuration>
+                    <skip>${skip.arduino.compile}</skip>
                     <arduinoCliVersion>${arduino-cli.version}</arduinoCliVersion>
                     <fqbn>arduino:avr:uno</fqbn>
                     <sketchDir>${arduino.dir}</sketchDir>
@@ -240,4 +269,19 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>local</id>
+            <activation>
+                <property>
+                    <name>spring-boot.run.profiles</name>
+                    <value>local</value>
+                </property>
+            </activation>
+            <properties>
+                <skip.arduino.compile>true</skip.arduino.compile>
+            </properties>
+        </profile>
+    </profiles>
 </project>

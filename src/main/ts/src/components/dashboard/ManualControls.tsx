@@ -10,7 +10,7 @@ import {
 } from "lucide-react"
 import { Separator } from "../ui/separator"
 import { useState } from "react"
-import { ActionWithDuration } from "@/types"
+import { ActionWithDuration } from "../../types"
 
 type ManualControlsProps = {
   onEmptyTank1: ActionWithDuration

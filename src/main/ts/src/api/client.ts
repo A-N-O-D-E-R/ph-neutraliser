@@ -12,11 +12,24 @@ import type {
   UsageDto,
   UsageConnectionRequest,
   CreateSensorRequest,
+  AppUser,
+  AuthUser,
+  Settings,
 } from '../types'
-
+import { useSessionStore } from '../store/userStore';
 
 const api = ky.create({
-  prefixUrl: `/api`,
+  prefixUrl: '/api',
+  hooks: {
+    beforeRequest: [
+      request => {
+        const { user } = useSessionStore.getState();
+        if (user?.token) {
+          request.headers.set('Authorization', `Bearer ${user.token}`);
+        }
+      }
+    ]
+  }
 });
 
 export const neutralizerApi = {
@@ -108,4 +121,31 @@ export const neutralizerApi = {
 
   restartSensorMonitor: () =>
     api.post('control/restart-sensor-monitor').json<void>(),
+
+
+  getEventSource: () => {
+    const eventSource = new EventSource('/api/events/subscribe');
+    return eventSource;
+  }
+}
+
+export const settingsApi = {
+  get: () => api.get('settings').json<ApiResponse<Settings>>(),
+  save: (settings: Settings) => api.put('settings', { json: settings }).json<ApiResponse<void>>(),
+}
+
+export const userApi = {
+  getAll: () => api.get('users').json<ApiResponse<AppUser[]>>(),
+
+  create: (data: { username: string; password: string; role: string }) =>
+    api.post('users', { json: data }).json<ApiResponse<AppUser>>(),
+
+  update: (id: string, data: { username: string; password?: string; role: string }) =>
+    api.put(`users/${id}`, { json: data }).json<ApiResponse<AppUser>>(),
+
+  delete: (id: string) =>
+    api.delete(`users/${id}`).json<ApiResponse<void>>(),
+
+  login: (username: string, password: string) =>
+    api.post('users/login', { json: { username, password } }).json<ApiResponse<AuthUser>>(),
 }

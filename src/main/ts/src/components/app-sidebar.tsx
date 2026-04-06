@@ -15,9 +15,13 @@ import {
   LayoutDashboard,
   Cpu,
   Settings,
+  Users,
+  LogOut,
 } from "lucide-react"
 
 import { useNavigation, type Page } from "../hooks/use-navigation"
+import { useAuth } from "../hooks/use-auth"
+import { useAbility } from "../hooks/use-ability"
 import { FlaskConical } from "lucide-react"
 
 const navItems: { label: string; page: Page; icon: React.ReactNode }[] = [
@@ -25,12 +29,15 @@ const navItems: { label: string; page: Page; icon: React.ReactNode }[] = [
   { label: "Hardware", page: "hardware", icon: <Cpu /> },
 ]
 
-const systemItems: { label: string; page: Page; icon: React.ReactNode }[] = [
-  { label: "Settings", page: "settings", icon: <Settings /> },
-]
-
 export function AppSidebar() {
   const { page, setPage } = useNavigation()
+  const { user, logout } = useAuth()
+  const ability = useAbility()
+
+  const systemItems: { label: string; page: Page; icon: React.ReactNode }[] = [
+    ...(ability.can("manage", "User") ? [{ label: "Users", page: "userManagement" as Page, icon: <Users /> }] : []),
+    { label: "Settings", page: "settings", icon: <Settings /> },
+  ]
 
   return (
     <Sidebar variant="inset">
@@ -96,7 +103,19 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* FOOTER */}
-      <SidebarFooter className="px-6 py-4">
+      <SidebarFooter className="px-6 py-4 space-y-2">
+        {user && (
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground truncate">{user.username}</span>
+            <button
+              onClick={logout}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
         <p className="text-xs text-muted-foreground">v1.0.0</p>
       </SidebarFooter>
 

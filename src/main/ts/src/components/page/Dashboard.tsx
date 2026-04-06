@@ -8,22 +8,23 @@ import {
   useEmptyNeutralizer,
   useActivateAcidPump,
   useActivateAgitation,
-  useHardwareStatus
-} from "../hooks/useNeutralizer"
-import { Skeleton } from "./ui/skeleton"
+  useHardwareStatus,
+  useServerEvents,
+} from "../../hooks/useNeutralizer"
+import { Skeleton } from "../ui/skeleton"
 import {
   Activity,
   Beaker,
   Power,
   Settings2,
 } from "lucide-react"
-import { MeasureChart } from "./MeasureChart"
-import NetworkConnectionErrorCard from "./NetworkConnectionErrorCard"
-import MesurementsSection from "./dashboard/MeasurementsSection"
-import StatusSection from "./dashboard/StatusSection"
-import { HardwareDetails } from "./hardware/HardwareDetails"
-import ModeControl from "./dashboard/ModeControl"
-import ManualControls from "./dashboard/ManualControls"
+import { MeasureChart } from "../chart/MeasureChart"
+import NetworkConnectionErrorCard from "../error/NetworkConnectionErrorCard"
+import MesurementsSection from "../dashboard/MeasurementsSection"
+import StatusSection from "../dashboard/StatusSection"
+import { HardwareDetails } from "../hardware/HardwareDetails"
+import ModeControl from "../dashboard/ModeControl"
+import ManualControls from "../dashboard/ManualControls"
 
 function DashboardSkeleton() {
   return (
@@ -51,6 +52,7 @@ function DashboardSkeleton() {
 export function Dashboard() {
   const { data: status, isLoading, error } = useStatus()
   const { data: hardware } = useHardwareStatus()
+  const { isLive } = useServerEvents()
   const { mutate: startAutomatic, isPending: isStarting } = useStartAutomatic()
   const { mutate: stopAutomatic, isPending: isStopping } = useStopAutomatic()
   const { mutate: triggerNeutralization, isPending: isNeutralizationPending } = useTriggerNeutralization();
@@ -62,7 +64,11 @@ export function Dashboard() {
 
   if (isLoading) return <DashboardSkeleton />
   if (error)
-    return NetworkConnectionErrorCard({ error })
+    return (
+    <div className="flex items-center justify-center min-h-[50vh] p-8">
+      <NetworkConnectionErrorCard error={error}/>
+    </div>
+    );
   if (!status) return null
 
   return (
@@ -75,13 +81,22 @@ export function Dashboard() {
             Monitor and control your pH neutralization system
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-          </span>
-          Live
-        </div>
+        {isLive ? (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            Live
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="relative flex h-2 w-2">
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-muted-foreground/40" />
+            </span>
+            No signal
+          </div>
+        )}
       </div>
 
       {/* MEASUREMENTS */}

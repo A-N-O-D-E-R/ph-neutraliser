@@ -196,3 +196,7 @@ curl https://localhost:8443 --cert certs/client.crt --key certs/client.key --cac
 3. Import `client.p12` into your browser to access the UI:
 - Firefox → Settings → Privacy → Certificates
 - Chrome → System certificates
+
+## License
+
+This project is licensed under the [Apache 2.0 License](./LICENSE).

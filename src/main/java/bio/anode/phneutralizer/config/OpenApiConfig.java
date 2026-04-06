@@ -24,7 +24,8 @@ public class OpenApiConfig {
                                 .name("A-N-O-D-E-R")
                                 .email("weber.anoder@proton.me"))
                         .license(new License()
-                                .name("Proprietary")))
+                                .name("Apache 2.0")
+                                .url("https://www.apache.org/licenses/LICENSE-2.0")))
                 .servers(List.of(
                         new Server()
                                 .url("http://localhost:8080/api")

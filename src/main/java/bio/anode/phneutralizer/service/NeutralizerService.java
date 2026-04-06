@@ -41,8 +41,7 @@ public class NeutralizerService  {
     private final AtomicReference<Boolean> lastWasteBisLevelEvent = new AtomicReference<>(false);
 
     // Injecting repositories and services
-    private final PhNeutraliserUsage neutraliser;
-    private final ClockRTCComponentUsage clock;
+    private final RobotManager robotManager;
     private final RawValueReader reader;
     private final ValueWriter writer;
     private final EventService eventService;
@@ -50,7 +49,7 @@ public class NeutralizerService  {
 
     @PostConstruct
     public void initCommunication() {
-        arduinoChecker.checkAndEnsureConnection(neutraliser);
+        arduinoChecker.checkAndEnsureConnection(robotManager.getNeutraliser());
     }
 
     @EventListener
@@ -76,18 +75,18 @@ public class NeutralizerService  {
     public NeutralizerStatusResponse getStatus() {
         log.debug("Getting neutralizer status");
         try {
-            NeutralizerConfiguration config = neutraliser.readConfiguration(reader);
+            NeutralizerConfiguration config = robotManager.getNeutraliser().readConfiguration(reader);
             return NeutralizerStatusResponse.builder()
                     .currentPh(lastPhEvent.get())
                     .targetPh(config.getPhTarget())
                     .temperature(lastTempEvent.get())
-                    .status(neutraliser.getStatus(reader))
-                    .runningMode(neutraliser.getRunningMode(reader))
+                    .status(robotManager.getNeutraliser().getStatus(reader))
+                    .runningMode(robotManager.getNeutraliser().getRunningMode(reader))
                     .acidLevel(lastAcidTankLevel.get() ? Level.OK : Level.LOW)
                     .neutralizerLevel(lastNeutralizerTankLevel.get() ? Level.HIGH : Level.OK)
                     .wasteLevel(lastWasteLevelEvent.get() ? Level.HIGH : Level.OK)
                     .wasteBisLevel(lastWasteBisLevelEvent.get() ? Level.HIGH : Level.OK)
-                    .systemTime(clock.read(reader))
+                    .systemTime(robotManager.getClock().read(reader))
                     .configuration(config)
                     .build();
         } catch (Exception e) {
@@ -100,7 +99,7 @@ public class NeutralizerService  {
     public NeutralizerConfiguration getConfiguration() {
         log.debug("Getting configuration");
         try {
-            return neutraliser.readConfiguration(reader);
+            return robotManager.getNeutraliser().readConfiguration(reader);
         } catch (CommunicationException e) {
             log.error("Failed to get configuration", e);
             throw new CommunicationException("Failed to read configuration", e);
@@ -111,7 +110,7 @@ public class NeutralizerService  {
     public void updateConfiguration(NeutralizerConfiguration config) {
         log.info("Updating configuration: {}", config);
         try {
-            neutraliser.writeConfiguration(config, writer);
+            robotManager.getNeutraliser().writeConfiguration(config, writer);
             log.info("Configuration updated successfully");
         } catch (CommunicationException e) {
             log.error("Failed to update configuration", e);
@@ -123,7 +122,7 @@ public class NeutralizerService  {
     public void startAutomaticMode() {
         log.info("Starting automatic mode");
         try {
-            neutraliser.startAutomatic(writer);
+            robotManager.getNeutraliser().startAutomatic(writer);
             logStatusEvent(Status.IDLE);
             log.info("Automatic mode started");
         } catch (CommunicationException e) {
@@ -136,7 +135,7 @@ public class NeutralizerService  {
     public void stopAutomaticMode() {
         log.info("Stopping automatic mode");
         try {
-            neutraliser.stopAutomatic(writer);
+            robotManager.getNeutraliser().stopAutomatic(writer);
             log.info("Switched to manual mode");
         } catch (CommunicationException e) {
             log.error("Failed to stop automatic mode", e);
@@ -148,7 +147,7 @@ public class NeutralizerService  {
     public void triggerNeutralization() {
         log.info("Triggering neutralization");
         try {
-            neutraliser.triggerNeutralization(writer);
+            robotManager.getNeutraliser().triggerNeutralization(writer);
             logStatusEvent(Status.NEUTRALIZING);
             log.info("Neutralization triggered");
         } catch (CommunicationException e) {
@@ -161,7 +160,7 @@ public class NeutralizerService  {
     public void emptyTank1(int duration) {
         log.info("Emptying tank 1 for {} seconds", duration);
         try {
-            neutraliser.emptyTank1(duration, writer);
+            robotManager.getNeutraliser().emptyTank1(duration, writer);
             logStatusEvent(Status.FORCING_EMPTYING_WASTE);
             log.info("Tank 1 emptying started");
         } catch (CommunicationException e) {
@@ -174,7 +173,7 @@ public class NeutralizerService  {
     public void emptyTank2(int duration) {
         log.info("Emptying tank 2 for {} seconds", duration);
         try {
-            neutraliser.emptyTank2(duration, writer);
+            robotManager.getNeutraliser().emptyTank2(duration, writer);
             logStatusEvent(Status.FORCING_EMPTYING_WASTE);
             log.info("Tank 2 emptying started");
         } catch (CommunicationException e) {
@@ -187,7 +186,7 @@ public class NeutralizerService  {
     public void emptyNeutralizer(int duration) {
         log.info("Emptying neutralizer for {} seconds", duration);
         try {
-            neutraliser.emptyNeutralizer(duration, writer);
+            robotManager.getNeutraliser().emptyNeutralizer(duration, writer);
             logStatusEvent(Status.FORCING_EMPTYING_NEUTRALIZER);
             log.info("Neutralizer emptying started");
         } catch (CommunicationException e) {
@@ -200,7 +199,7 @@ public class NeutralizerService  {
     public void activateAcidPump(int timing) {
         log.info("Activating acid pump for {} seconds", timing);
         try {
-            neutraliser.activateAcidPump(timing, writer);
+            robotManager.getNeutraliser().activateAcidPump(timing, writer);
             logStatusEvent(Status.MANUALLY_PUMPING_ACID);
             log.info("Acid pump activated");
         } catch (CommunicationException e) {
@@ -213,7 +212,7 @@ public class NeutralizerService  {
     public void activateAgitation(int period) {
         log.info("Activating agitation for {} seconds", period);
         try {
-            neutraliser.activateAgitation(writer);
+            robotManager.getNeutraliser().activateAgitation(writer);
             logStatusEvent(Status.MANUALLY_BULLING);
             log.info("Agitation activated");
         } catch (CommunicationException e) {
@@ -226,7 +225,7 @@ public class NeutralizerService  {
     public void calibratePh(CalibrationRequest request) {
         log.info("Calibrating pH at {} point with value {}", request.getPoint(), request.getPhValue());
         try {
-            neutraliser.calibratePh(request, writer);
+            robotManager.getNeutraliser().calibratePh(request, writer);
             log.info("pH calibration completed");
         } catch (CommunicationException e) {
             log.error("Failed to calibrate pH", e);
@@ -238,14 +237,14 @@ public class NeutralizerService  {
     public HardwareStatusResponse getHardwareStatus() {
         log.debug("Getting hardware status");
         try {
-            ModbusConnectionParameters baseParams = (ModbusConnectionParameters) neutraliser.getNeutralizer().getConnectionParameters();
+            ModbusConnectionParameters baseParams = (ModbusConnectionParameters) robotManager.getNeutraliser().getNeutralizer().getConnectionParameters();
             return HardwareStatusResponse.builder()
                     .connected(true) // add a var in NeutralizerServiceImpl to track connection status and return it here by checking the last successful communication time with the device
                     .portName(baseParams.getName())
                     .baudrate(38400) // TODO: read actual baudrate from device and return it here
                     .slaveId(baseParams.getSlaveId())
-                    .relayStatus(neutraliser.getRelayStatus(reader))
-                    .deviceTime(clock.read(reader))
+                    .relayStatus(robotManager.getNeutraliser().getRelayStatus(reader))
+                    .deviceTime(robotManager.getClock().read(reader))
                     .firmwareVersion("1.0.0") // TODO: read actual firmware version from device and return it here
                     .build();
         } catch (Exception e) {
@@ -258,7 +257,7 @@ public class NeutralizerService  {
     public void synchronizeTime() {
         log.info("Synchronizing device time");
         try {
-            clock.write(writer, LocalDateTime.now());
+            robotManager.getClock().write(writer, LocalDateTime.now());
             log.info("Device time synchronized");
         } catch (Exception e) {
             log.error("Failed to synchronize time", e);
@@ -268,7 +267,7 @@ public class NeutralizerService  {
 
     private void logStatusEvent(Status status) {
         try {
-            Level acidLevel = neutraliser.getAcidLevel(reader) == 0 ? Level.OK : Level.LOW;
+            Level acidLevel = robotManager.getNeutraliser().getAcidLevel(reader) == 0 ? Level.OK : Level.LOW;
             eventService.archiveEvent(new NeutralizerEvent(LocalDateTime.now(), status, acidLevel));
         } catch (CommunicationException e) {
             log.warn("Failed to read acid level for event logging", e);

@@ -1,7 +1,7 @@
 import { Beaker, Droplets, FlaskConical, Thermometer, Trash2 } from "lucide-react";
-import { StatusCard } from "../StatusCard";
-import { StatusCardWithTarget } from "../StatusCardWithTarget";
-import { NeutralizerStatus } from "@/types";
+import { StatusCard } from "../card/StatusCard";
+import { StatusCardWithTarget } from "../card/StatusCardWithTarget";
+import { NeutralizerStatus } from "../../types";
 
 export default function MesurementsSection({status}: {status:NeutralizerStatus}){
     return (

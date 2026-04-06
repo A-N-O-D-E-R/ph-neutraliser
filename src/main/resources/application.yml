@@ -67,13 +67,10 @@ logging:
   event:
     path: ./logs
     retention-days: 30
+    archive-after-days: 7
+    enabled: true
+    scheduled: true
 
-# Scheduler
-scheduler:
-  archive:
-    cron: "0 0 2 * * *"
-  backup:
-    cron: "0 30 2 * * *"
 
 # B2 Cloud Backup
 b2:
@@ -81,3 +78,16 @@ b2:
   application-key-id: ${B2_KEY_ID:}
   application-key: ${B2_KEY:}
   default-bucket-name: ${B2_BUCKET:ph-neutralizer-backup}
+
+anode:
+  security:
+    env-local-jwt: true
+    login-url: /neutralizer
+    post-logout-url: /
+    allowedPatterns:
+      - /api/users/login
+      - /neutralizer
+      - /index.html
+      - /assets/**
+      - /api/events/subscribe
+      - /favicon.ico

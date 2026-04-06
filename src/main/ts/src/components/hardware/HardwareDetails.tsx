@@ -11,7 +11,7 @@ import {
   Activity,
 } from "lucide-react"
 import { useRestartSensorMonitor, useSynchronizeTime } from "../../hooks/useNeutralizer"
-import { HardwareStatus } from "@/types"
+import { HardwareStatus } from "../../types"
 
 export function HardwareDetails({ hardware }: { hardware: HardwareStatus }) {
     const syncTime = useSynchronizeTime()
