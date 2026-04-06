@@ -31,11 +31,20 @@ server:
     
 logging:
   level:
-    bio.anode.phneutralizer: INFO
+    "[bio.altar.phneutralizer]": DEBUG
   event:
     path: ${java.io.tmpdir}/logs
-    retention-days: 2
+    archive-after-days: 1
+    retention-days: 20
 
 anode:
   security:
     env-local-jwt: true
+    login-url: /neutralizer
+    post-logout-url: /
+    allowedPatterns:
+      - /api/**
+      - /neutralizer
+      - /index.html
+      - /assets/**
+      - /favicon.ico  

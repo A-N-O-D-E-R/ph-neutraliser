@@ -1,17 +1,15 @@
 import { Settings } from "../types"
-import { DEFAULT_SETTINGS, STORAGE_KEYS } from "../utils/consts"
-import { loadFromStorage, saveToStorage } from "../utils/storage-helper"
+import { DEFAULT_SETTINGS } from "../utils/consts"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { settingsApi } from "../api/client"
 
 export function useSettings() {
   return useQuery({
     queryKey: ["settings"],
-    queryFn: () =>
-      loadFromStorage<Settings>(
-        STORAGE_KEYS.SETTINGS,
-        localStorage,
-        DEFAULT_SETTINGS
-      ),
+    queryFn: async () => {
+      const res = await settingsApi.get()
+      return res.data ?? DEFAULT_SETTINGS
+    },
   })
 }
 
@@ -19,12 +17,9 @@ export function useSaveSettings() {
   const qc = useQueryClient()
 
   return useMutation({
-    mutationFn: async (settings: Settings) => {
-        saveToStorage(STORAGE_KEYS.SETTINGS, localStorage, settings)
-        return settings
-    },
+    mutationFn: (settings: Settings) => settingsApi.save(settings),
     onSuccess: () => {
-        qc.invalidateQueries({ queryKey: ["settings"] })
+      qc.invalidateQueries({ queryKey: ["settings"] })
     },
   })
 }

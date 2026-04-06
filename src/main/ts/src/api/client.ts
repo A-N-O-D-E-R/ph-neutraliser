@@ -14,6 +14,7 @@ import type {
   CreateSensorRequest,
   AppUser,
   AuthUser,
+  Settings,
 } from '../types'
 import { useSessionStore } from '../store/userStore';
 
@@ -126,6 +127,11 @@ export const neutralizerApi = {
     const eventSource = new EventSource('/api/events/subscribe');
     return eventSource;
   }
+}
+
+export const settingsApi = {
+  get: () => api.get('settings').json<ApiResponse<Settings>>(),
+  save: (settings: Settings) => api.put('settings', { json: settings }).json<ApiResponse<void>>(),
 }
 
 export const userApi = {

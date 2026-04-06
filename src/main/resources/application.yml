@@ -67,13 +67,10 @@ logging:
   event:
     path: ./logs
     retention-days: 30
+    archive-after-days: 7
+    enabled: true
+    scheduled: true
 
-# Scheduler
-scheduler:
-  archive:
-    cron: "0 0 2 * * *"
-  backup:
-    cron: "0 30 2 * * *"
 
 # B2 Cloud Backup
 b2:
@@ -86,9 +83,11 @@ anode:
   security:
     env-local-jwt: true
     login-url: /neutralizer
-    allowedPatterns: 
-    - "/api/users/login"
-    - "/neutralizer"
-    - "/index.html"
-    - "/assets/**"
-    - "/favicon.ico"
+    post-logout-url: /
+    allowedPatterns:
+      - /api/users/login
+      - /neutralizer
+      - /index.html
+      - /assets/**
+      - /api/events/subscribe
+      - /favicon.ico

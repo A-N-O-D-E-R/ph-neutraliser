@@ -63,7 +63,7 @@ public class UserService {
         user.setUsername(request.getUsername());
         user.setRole(request.getRole());
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            user.setPasswordHash(String.valueOf(request.getPassword().hashCode())); // bad but access is LAN only so ok
+            user.setPasswordHash(request.getPassword()); // bad but access is LAN only so ok
         }
         return userMapper.toDto(userRepository.save(user));
     }
