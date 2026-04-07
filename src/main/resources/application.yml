@@ -4,7 +4,9 @@ server:
 spring:
   application:
     name: ph-neutralizer
-
+  config:
+    import:
+      - optional:file:./application-custom.yaml
   datasource:
     url: jdbc:sqlite:hardware.db
     driver-class-name: org.sqlite.JDBC
@@ -35,6 +37,12 @@ spring:
   sql:
     init:
       mode: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh
 
 # Modbus Configuration
 modbus:
