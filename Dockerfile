@@ -1,23 +1,19 @@
 # Build stage
-FROM eclipse-temurin:17-jdk-alpine AS build
+FROM eclipse-temurin:25.0.3_9-jdk-noble AS build
+
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN apk add --no-cache maven && \
-    mvn clean package -DskipTests
+
+COPY . .
+
+RUN --mount=type=secret,id=settings,dst=/root/.m2/settings.xml \
+    chmod +x mvnw && ./mvnw clean package -DskipTests
 
 # Runtime stage
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:25.0.3_9-jre-noble
 WORKDIR /app
 
-# Create logs directory
-RUN mkdir -p /app/logs
-
-# Copy jar
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose port
 EXPOSE 8080
 
-# Run
 ENTRYPOINT ["java", "-jar", "app.jar"]
