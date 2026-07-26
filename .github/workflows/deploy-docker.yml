@@ -1,0 +1,55 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: anoder/ph-neutralizer
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and push image
+        run: |
+          ./mvnw spring-boot:build-image \
+            -Dspring-boot.build-image.imageName=docker.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            -Dspring-boot.build-image.publish=true
+
+      - name: Tag and push latest
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker tag docker.io/${{ env.IMAGE_NAME }}:${{ github.sha }} docker.io/${{ env.IMAGE_NAME }}:latest
+          docker push docker.io/${{ env.IMAGE_NAME }}:latest
+
+      - name: Tag and push release version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          docker tag docker.io/${{ env.IMAGE_NAME }}:${{ github.sha }} docker.io/${{ env.IMAGE_NAME }}:$VERSION
+          docker push docker.io/${{ env.IMAGE_NAME }}:$VERSION

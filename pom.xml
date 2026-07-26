@@ -5,15 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.anode</groupId>
+        <groupId>io.github.a-n-o-d-e-r</groupId>
         <artifactId>springboot-starter-collection</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.2</version>
         <relativePath/>
     </parent>
 
-    <groupId>bio.anode</groupId>
+    <groupId>io.github.a-n-o-d-e-r</groupId>
     <artifactId>ph-neutralizer</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.2</version>
     <name>Open pH neutralizer</name>
     <description>REST API for pH Neutralization System Control</description>
 
@@ -24,7 +24,7 @@
         <node.version>v20.20.0</node.version>
         <pnpm.version>10.33.0</pnpm.version>
         <arduino-cli.version>0.35.2</arduino-cli.version>
-        <j4ino.version>1.0-SNAPSHOT</j4ino.version>
+        <j4ino.version>0.3</j4ino.version>
         <openapi.version>2.3.0</openapi.version>
         <sqlite.version>3.45.1.0</sqlite.version>
         <mapstruct.version>1.6.3</mapstruct.version>
@@ -41,7 +41,7 @@
 
         <!-- J4ino - a Arduino CLI Wrapper [Not cloud native] -->
         <dependency>
-            <groupId>com.anode.arduino</groupId>
+            <groupId>io.github.a-n-o-d-e-r.arduino</groupId>
             <artifactId>j4ino</artifactId>
             <version>${j4ino.version}</version>
         </dependency>
@@ -75,25 +75,25 @@
 
         <!-- Event Logging -->
         <dependency>
-            <groupId>com.anode</groupId>
+            <groupId>io.github.a-n-o-d-e-r</groupId>
             <artifactId>springboot-starter-collection-logging</artifactId>
         </dependency>
 
         <!-- Modbus Communication -->
         <dependency>
-            <groupId>com.anode</groupId>
+            <groupId>io.github.a-n-o-d-e-r</groupId>
             <artifactId>spring-boot-starter-modbus</artifactId>
         </dependency>
 
         <!-- B2 Cloud Storage -->
         <dependency>
-            <groupId>com.anode</groupId>
+            <groupId>io.github.a-n-o-d-e-r</groupId>
             <artifactId>spring-boot-starter-b2</artifactId>
         </dependency>
 
         <!-- security -->
         <dependency>
-            <groupId>com.anode</groupId>
+            <groupId>io.github.a-n-o-d-e-r</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
@@ -157,6 +157,10 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                    <image>
+                        <name>docker.io/anoder/${project.artifactId}:${project.version}</name>
+                        <publish>false</publish>
+                    </image>
                 </configuration>
             </plugin>
             <plugin>
@@ -208,9 +212,9 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.anode</groupId>
+                <groupId>io.github.a-n-o-d-e-r</groupId>
                 <artifactId>arduino-maven-plugin</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>1.0.0</version>
 
                 <configuration>
                     <skip>${skip.arduino.compile}</skip>
