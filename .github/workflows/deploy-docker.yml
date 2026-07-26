@@ -38,7 +38,7 @@ jobs:
       - name: Build and push image
         run: |
           ./mvnw spring-boot:build-image \
-            -Dspring-boot.build-image.imageName=docker.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            -Ddocker.image.tag=${{ github.sha }} \
             -Dspring-boot.build-image.publish=true
 
       - name: Tag and push latest

@@ -29,6 +29,7 @@
         <sqlite.version>3.45.1.0</sqlite.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <skip.arduino.compile>false</skip.arduino.compile>
+        <docker.image.tag>${project.version}</docker.image.tag>
     </properties>
 
     <dependencies>
@@ -173,7 +174,7 @@
                         </exclude>
                     </excludes>
                     <image>
-                        <name>docker.io/anoder/${project.artifactId}:${project.version}</name>
+                        <name>docker.io/anoder/${project.artifactId}:${docker.image.tag}</name>
                         <publish>false</publish>
                     </image>
                 </configuration>
