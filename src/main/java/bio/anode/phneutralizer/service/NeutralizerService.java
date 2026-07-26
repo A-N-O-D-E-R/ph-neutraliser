@@ -49,7 +49,11 @@ public class NeutralizerService  {
 
     @PostConstruct
     public void initCommunication() {
-        arduinoChecker.checkAndEnsureConnection(robotManager.getNeutraliser());
+        try {
+            arduinoChecker.checkAndEnsureConnection(robotManager.getNeutraliser());
+        } catch (IllegalStateException e) {
+            log.warn("Could not initialize communication: {}", e.getMessage());
+        }
     }
 
     @EventListener

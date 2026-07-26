@@ -4,18 +4,18 @@ import bio.anode.phneutralizer.model.usage.ClockRTCComponentUsage;
 import bio.anode.phneutralizer.model.usage.PhNeutraliserUsage;
 import bio.anode.phneutralizer.repository.ClockRTCRepository;
 import bio.anode.phneutralizer.repository.PhNeutraliserRepository;
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 
 @Service
 public class RobotManager {
-    
+
     private final PhNeutraliserRepository neutraliserRepository;
     private final ClockRTCRepository clockRepository;
 
     private PhNeutraliserUsage neutraliser;
     private ClockRTCComponentUsage clock;
+    private boolean initialized = false;
 
     public RobotManager(PhNeutraliserRepository neutraliserRepository,
                         ClockRTCRepository clockRepository) {
@@ -23,22 +23,26 @@ public class RobotManager {
         this.clockRepository = clockRepository;
     }
 
-    @PostConstruct
-    public void init() {
-        this.neutraliser = neutraliserRepository.findAll().stream()
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No PhNeutraliserUsage found"));
+    private void ensureInitialized() {
+        if (!initialized) {
+            this.neutraliser = neutraliserRepository.findAll().stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("No PhNeutraliserUsage found"));
 
-        this.clock = clockRepository.findAll().stream()
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No ClockRTCComponentUsage found"));
+            this.clock = clockRepository.findAll().stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("No ClockRTCComponentUsage found"));
+            initialized = true;
+        }
     }
 
     public PhNeutraliserUsage getNeutraliser() {
+        ensureInitialized();
         return neutraliser;
     }
 
     public ClockRTCComponentUsage getClock() {
+        ensureInitialized();
         return clock;
     }
 }

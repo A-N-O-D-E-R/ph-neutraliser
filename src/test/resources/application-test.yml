@@ -1,4 +1,19 @@
-# Test profile
+# Test profile - uses in-memory SQLite via TestContainers
+
+spring:
+  datasource:
+    url: jdbc:sqlite:file:memdb?mode=memory&cache=shared
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    show-sql: false
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: never
 
 logging:
   level:
@@ -6,3 +21,5 @@ logging:
   event:
     path: ./target/test-logs
     retention-days: 1
+
+logging.level.bio.anode.phneutralizer: DEBUG
